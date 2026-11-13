@@ -14662,6 +14662,540 @@
    }
   },
   {
+   "name": "startCursor of 'key' in 'z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "startCursor": "<x key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'key' in 'z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "endCursor": "<x key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'key' in 'z descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<x key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'key' in 'z descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<x key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'key' in 'z descending then y'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "y"
+       }
+      }
+     ],
+     "startCursor": "<x key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "endCursor of 'key' in 'z descending then y'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "y"
+       }
+      }
+     ],
+     "endCursor": "<x key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "startCursor of 'key' in 'key then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<x key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'key' in 'key then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<x key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l1\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"9\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"8\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"integerValue\": \"7\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'key' in 'key descending then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<x key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"integerValue\": \"7\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"8\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l1\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"9\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'key' in 'key descending then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<x key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'key' in 'key then a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<x key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'key' in 'key then a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<x key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l1\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"9\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"8\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"integerValue\": \"7\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'key' in 'key then z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "startCursor": "<x key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'key' in 'key then z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "endCursor": "<x key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
    "name": "startCursor of 'key descending' in 'key'",
    "method": "POST",
    "path": "/v1/projects/{project}:runQuery",
@@ -15235,6 +15769,540 @@
       {
        "property": {
         "name": "b"
+       }
+      }
+     ],
+     "endCursor": "<x key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "startCursor of 'key descending' in 'z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "startCursor": "<x key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "endCursor of 'key descending' in 'z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "endCursor": "<x key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "startCursor of 'key descending' in 'z descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<x key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "endCursor of 'key descending' in 'z descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<x key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "startCursor of 'key descending' in 'z descending then y'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "y"
+       }
+      }
+     ],
+     "startCursor": "<x key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "endCursor of 'key descending' in 'z descending then y'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "y"
+       }
+      }
+     ],
+     "endCursor": "<x key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "startCursor of 'key descending' in 'key then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<x key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "endCursor of 'key descending' in 'key then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<x key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "startCursor of 'key descending' in 'key descending then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<x key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "endCursor of 'key descending' in 'key descending then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<x key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "startCursor of 'key descending' in 'key then a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<x key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "endCursor of 'key descending' in 'key then a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<x key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "startCursor of 'key descending' in 'key then z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "startCursor": "<x key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "endCursor of 'key descending' in 'key then z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "z"
        }
       }
      ],
@@ -15842,6 +16910,540 @@
    }
   },
   {
+   "name": "startCursor of 'a' in 'z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "startCursor": "<x a>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a' in 'z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "endCursor": "<x a>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'a' in 'z descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<x a>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a' in 'z descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<x a>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'a' in 'z descending then y'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "y"
+       }
+      }
+     ],
+     "startCursor": "<x a>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a' in 'z descending then y'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "y"
+       }
+      }
+     ],
+     "endCursor": "<x a>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'a' in 'key then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<x a>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l1\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"9\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"8\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"integerValue\": \"7\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a' in 'key then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<x a>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'a' in 'key descending then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<x a>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a' in 'key descending then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<x a>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"integerValue\": \"7\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"8\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l1\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"9\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'a' in 'key then a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<x a>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l1\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"9\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"8\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"integerValue\": \"7\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a' in 'key then a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<x a>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'a' in 'key then z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "startCursor": "<x a>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a' in 'key then z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "endCursor": "<x a>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
    "name": "startCursor of 'a descending' in 'key'",
    "method": "POST",
    "path": "/v1/projects/{project}:runQuery",
@@ -16415,6 +18017,540 @@
       {
        "property": {
         "name": "b"
+       }
+      }
+     ],
+     "endCursor": "<x a descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'a descending' in 'z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "startCursor": "<x a descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a descending' in 'z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "endCursor": "<x a descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'a descending' in 'z descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<x a descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a descending' in 'z descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<x a descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'a descending' in 'z descending then y'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "y"
+       }
+      }
+     ],
+     "startCursor": "<x a descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a descending' in 'z descending then y'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "y"
+       }
+      }
+     ],
+     "endCursor": "<x a descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'a descending' in 'key then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<x a descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l1\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"9\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"8\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"integerValue\": \"7\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a descending' in 'key then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<x a descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'a descending' in 'key descending then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<x a descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a descending' in 'key descending then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<x a descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"integerValue\": \"7\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"8\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l1\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"9\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'a descending' in 'key then a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<x a descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l1\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"9\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"8\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"integerValue\": \"7\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a descending' in 'key then a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<x a descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'a descending' in 'key then z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "startCursor": "<x a descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a descending' in 'key then z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "z"
        }
       }
      ],
@@ -17022,6 +19158,540 @@
    }
   },
   {
+   "name": "startCursor of 'no kind' in 'z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "startCursor": "<x no kind>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'no kind' in 'z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "endCursor": "<x no kind>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'no kind' in 'z descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<x no kind>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'no kind' in 'z descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<x no kind>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'no kind' in 'z descending then y'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "y"
+       }
+      }
+     ],
+     "startCursor": "<x no kind>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "endCursor of 'no kind' in 'z descending then y'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "y"
+       }
+      }
+     ],
+     "endCursor": "<x no kind>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "startCursor of 'no kind' in 'key then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<x no kind>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'no kind' in 'key then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<x no kind>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l1\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"9\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"8\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"integerValue\": \"7\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'no kind' in 'key descending then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<x no kind>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"integerValue\": \"7\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"8\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l1\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"9\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'no kind' in 'key descending then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<x no kind>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'no kind' in 'key then a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<x no kind>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'no kind' in 'key then a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<x no kind>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l1\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"9\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"8\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"integerValue\": \"7\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'no kind' in 'key then z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "startCursor": "<x no kind>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'no kind' in 'key then z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "endCursor": "<x no kind>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
    "name": "startCursor of 'a, key descending' in 'key'",
    "method": "POST",
    "path": "/v1/projects/{project}:runQuery",
@@ -17595,6 +20265,540 @@
       {
        "property": {
         "name": "b"
+       }
+      }
+     ],
+     "endCursor": "<x a, key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'a, key descending' in 'z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "startCursor": "<x a, key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a, key descending' in 'z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "endCursor": "<x a, key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'a, key descending' in 'z descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<x a, key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a, key descending' in 'z descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<x a, key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'a, key descending' in 'z descending then y'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "y"
+       }
+      }
+     ],
+     "startCursor": "<x a, key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a, key descending' in 'z descending then y'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "y"
+       }
+      }
+     ],
+     "endCursor": "<x a, key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'a, key descending' in 'key then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<x a, key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l1\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"9\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"8\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"integerValue\": \"7\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a, key descending' in 'key then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<x a, key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'a, key descending' in 'key descending then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<x a, key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a, key descending' in 'key descending then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<x a, key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"integerValue\": \"7\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"8\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l1\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"9\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'a, key descending' in 'key then a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<x a, key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l1\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"9\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"8\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"integerValue\": \"7\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a, key descending' in 'key then a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<x a, key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'a, key descending' in 'key then z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "startCursor": "<x a, key descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a, key descending' in 'key then z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "z"
        }
       }
      ],
@@ -18202,6 +21406,540 @@
    }
   },
   {
+   "name": "startCursor of 'a descending, key' in 'z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "startCursor": "<x a descending, key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a descending, key' in 'z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "endCursor": "<x a descending, key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'a descending, key' in 'z descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<x a descending, key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a descending, key' in 'z descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<x a descending, key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'a descending, key' in 'z descending then y'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "y"
+       }
+      }
+     ],
+     "startCursor": "<x a descending, key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a descending, key' in 'z descending then y'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "y"
+       }
+      }
+     ],
+     "endCursor": "<x a descending, key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'a descending, key' in 'key then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<x a descending, key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l1\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"9\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"8\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"integerValue\": \"7\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a descending, key' in 'key then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<x a descending, key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'a descending, key' in 'key descending then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<x a descending, key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a descending, key' in 'key descending then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<x a descending, key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"integerValue\": \"7\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"8\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l1\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"9\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'a descending, key' in 'key then a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<x a descending, key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l1\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"9\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"8\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xc\"\n          },\n          \"path\": [{\n            \"kind\": \"L\",\n            \"name\": \"l3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"integerValue\": \"7\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a descending, key' in 'key then a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<x a descending, key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of 'a descending, key' in 'key then z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "startCursor": "<x a descending, key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of 'a descending, key' in 'key then z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "endCursor": "<x a descending, key>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
    "name": "startCursor of 'key, b' in 'key'",
    "method": "POST",
    "path": "/v1/projects/{project}:runQuery",
@@ -18775,6 +22513,540 @@
       {
        "property": {
         "name": "b"
+       }
+      }
+     ],
+     "endCursor": "<x key, b>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"index data should not include primary key\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "startCursor of 'key, b' in 'z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "startCursor": "<x key, b>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"index data should not include primary key\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "endCursor of 'key, b' in 'z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "endCursor": "<x key, b>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"index data should not include primary key\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "startCursor of 'key, b' in 'z descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<x key, b>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"index data should not include primary key\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "endCursor of 'key, b' in 'z descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<x key, b>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"index data should not include primary key\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "startCursor of 'key, b' in 'z descending then y'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "y"
+       }
+      }
+     ],
+     "startCursor": "<x key, b>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"index data should not include primary key\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "endCursor of 'key, b' in 'z descending then y'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "z"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "y"
+       }
+      }
+     ],
+     "endCursor": "<x key, b>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"index data should not include primary key\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "startCursor of 'key, b' in 'key then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<x key, b>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"index data should not include primary key\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "endCursor of 'key, b' in 'key then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<x key, b>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"index data should not include primary key\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "startCursor of 'key, b' in 'key descending then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<x key, b>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"index data should not include primary key\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "endCursor of 'key, b' in 'key descending then a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<x key, b>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"index data should not include primary key\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "startCursor of 'key, b' in 'key then a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<x key, b>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"index data should not include primary key\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "endCursor of 'key, b' in 'key then a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<x key, b>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"index data should not include primary key\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "startCursor of 'key, b' in 'key then z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "z"
+       }
+      }
+     ],
+     "startCursor": "<x key, b>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"index data should not include primary key\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "endCursor of 'key, b' in 'key then z'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "L"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "z"
        }
       }
      ],

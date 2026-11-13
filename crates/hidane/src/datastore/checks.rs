@@ -93,14 +93,54 @@ fn bare_ancestor(filter: &Filter) -> bool {
         Some(FilterType::PropertyFilter(p)) if operator(p) == Some(Operator::HasAncestor))
 }
 
+/// Whether two values are one to the official emulator's normalization: alike but for a double,
+/// where NaN is NaN and -0.0 is 0.0, also inside arrays and entities.
+fn same_value(a: &Value, b: &Value) -> bool {
+    let same_type = match (&a.value_type, &b.value_type) {
+        (Some(ValueType::DoubleValue(x)), Some(ValueType::DoubleValue(y))) => {
+            x == y || (x.is_nan() && y.is_nan())
+        }
+        (Some(ValueType::ArrayValue(x)), Some(ValueType::ArrayValue(y))) => {
+            x.values.len() == y.values.len()
+                && x.values
+                    .iter()
+                    .zip(&y.values)
+                    .all(|(x, y)| same_value(x, y))
+        }
+        (Some(ValueType::EntityValue(x)), Some(ValueType::EntityValue(y))) => {
+            x.key == y.key
+                && x.properties.len() == y.properties.len()
+                && x.properties
+                    .iter()
+                    .all(|(name, x)| y.properties.get(name).is_some_and(|y| same_value(x, y)))
+        }
+        (x, y) => x == y,
+    };
+    same_type && a.meaning == b.meaning && a.exclude_from_indexes == b.exclude_from_indexes
+}
+
+/// Whether two property filters are one to the official emulator's normalization
+/// ([`same_value`]).
+fn same_filter(a: &PropertyFilter, b: &PropertyFilter) -> bool {
+    a.property == b.property
+        && a.op == b.op
+        && match (&a.value, &b.value) {
+            (Some(x), Some(y)) => same_value(x, y),
+            (x, y) => x == y,
+        }
+}
+
 /// A filter in disjunctive normal form as the official emulator normalizes it: without its
 /// `HAS_ANCESTOR` filters, an `IN` an equality per value, each conjunction once (as a set) and
-/// each filter once in it. `None` once a conjunction would make more than twice the most
-/// disjunctions allowed: the official emulator stops counting there.
+/// each filter once in it ([`same_filter`]). `None` once a conjunction would make more than
+/// twice the most disjunctions allowed: the official emulator stops counting there.
 fn normalized(filter: &Filter) -> Option<Vec<Vec<PropertyFilter>>> {
     fn add(out: &mut Vec<Vec<PropertyFilter>>, conjunction: Vec<PropertyFilter>) {
         let same = |seen: &Vec<PropertyFilter>| {
-            seen.len() == conjunction.len() && seen.iter().all(|f| conjunction.contains(f))
+            seen.len() == conjunction.len()
+                && seen
+                    .iter()
+                    .all(|f| conjunction.iter().any(|g| same_filter(f, g)))
         };
         if !out.iter().any(same) {
             out.push(conjunction);
@@ -138,7 +178,7 @@ fn normalized(filter: &Filter) -> Option<Vec<Vec<PropertyFilter>>> {
                     for right in &terms {
                         let mut conjunction: Vec<PropertyFilter> = Vec::new();
                         for f in left.iter().chain(right) {
-                            if !conjunction.contains(f) {
+                            if !conjunction.iter().any(|g| same_filter(f, g)) {
                                 conjunction.push(f.clone());
                             }
                         }
@@ -185,6 +225,75 @@ fn disjunctions(query: &Query) -> Result<(), Status> {
         )));
     }
     Ok(())
+}
+
+/// The most filters, orders and ancestors a query may have.
+const MAX_TERMS: usize = 100;
+
+/// How many filters a filter of a conjunction counts as toward [`MAX_TERMS`]: a `NOT_IN` one
+/// per value ([`same_value`] counted once), any other one.
+fn weight(filter: &PropertyFilter) -> usize {
+    match (operator(filter), &filter.value) {
+        (
+            Some(Operator::NotIn),
+            Some(Value {
+                value_type: Some(ValueType::ArrayValue(array)),
+                ..
+            }),
+        ) => {
+            let mut seen: Vec<&Value> = Vec::new();
+            for v in &array.values {
+                if !seen.iter().any(|w| same_value(v, w)) {
+                    seen.push(v);
+                }
+            }
+            seen.len()
+        }
+        _ => 1,
+    }
+}
+
+/// At most 100 filters, orders and ancestors: the filters of every conjunction of the filter in
+/// disjunctive normal form ([`normalized`], [`weight`]), the properties the query orders by
+/// (those it orders by, filters by an inequality, projects, is distinct on, and `read`, the
+/// properties its aggregations read), with the key, and one for an ancestor
+/// (`tools/oracle/datastore_checks.py`).
+fn terms(query: &Query, all: &[(&Filter, bool)], read: &[&str]) -> Result<(), Status> {
+    let filters: usize = query
+        .filter
+        .as_ref()
+        .and_then(normalized)
+        .unwrap_or_default()
+        .iter()
+        .map(|conjunction| conjunction.iter().map(weight).sum::<usize>())
+        .sum();
+    let unequal = properties(all)
+        .filter(|(f, _)| inequality(operator(f)))
+        .map(|(f, _)| Some(name(f)));
+    let mut sorts: Vec<&str> = vec!["__key__"];
+    for property in names(query)
+        .chain(unequal)
+        .flatten()
+        .chain(read.iter().copied())
+    {
+        if !sorts.contains(&property) {
+            sorts.push(property);
+        }
+    }
+    let sorts = sorts.len();
+    let ancestor = properties(all).any(|(f, _)| operator(f) == Some(Operator::HasAncestor));
+    if filters + sorts + usize::from(ancestor) <= MAX_TERMS {
+        return Ok(());
+    }
+    Err(invalid(format!(
+        "The query may not have more than {MAX_TERMS} filters + sort orders + ancestor total. \
+         Currently there are {filters} filters, {sorts} sort orders, and {}.",
+        if ancestor {
+            "one ancestor filter"
+        } else {
+            "no ancestor filter"
+        }
+    )))
 }
 
 /// The property filters of a query's filter in disjunctive normal form, conjunction by
@@ -767,6 +876,14 @@ fn entity_late(
     database: &Database,
     all: &[(&Filter, bool)],
 ) -> Result<(), Status> {
+    // The queries of kinds and namespaces count their filters and orders once they are checked.
+    let of_metadata = matches!(
+        query.kind.first().map(|k| k.name.as_str()),
+        Some("__kind__" | "__namespace__")
+    );
+    if !of_metadata {
+        terms(query, all, &[])?;
+    }
     ancestor_databases(all, database)?;
     ancestor_namespace(all, namespace)?;
     if query.kind.is_empty() && ordered_beyond_key(query, all) {
@@ -803,6 +920,9 @@ fn entity_late(
     grouped_first(query)?;
     cursors_match(query, namespace, &[])?;
     metadata(query, database, all)?;
+    if of_metadata {
+        terms(query, all, &[])?;
+    }
     unreadable_elements(all)
 }
 
@@ -1053,6 +1173,11 @@ fn aggregation_late(
     if query.limit.is_some_and(|n| n < 0) {
         return Err(invalid("limit is negative"));
     }
+    let read: Vec<&str> = list
+        .iter()
+        .filter_map(|a| aggregated(a.operator.as_ref()))
+        .collect();
+    terms(query, all, &read)?;
     // The ancestor's key is read here, before its namespace is compared.
     for (filter, _) in properties(all) {
         if operator(filter) == Some(Operator::HasAncestor)
@@ -1133,9 +1258,5 @@ fn aggregation_late(
         return Err(invalid(EMPTY_SEGMENT));
     }
     grouped_first(query)?;
-    let read: Vec<&str> = list
-        .iter()
-        .filter_map(|a| aggregated(a.operator.as_ref()))
-        .collect();
     cursors_match(query, namespace, &read)
 }

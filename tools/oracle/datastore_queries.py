@@ -311,7 +311,14 @@ TARGETS = {"key": {"kind": L}, "key descending": {"kind": L, "order": [desc("__k
            "a": {"kind": L, "order": [asc("a")]}, "a descending": {"kind": L, "order": [desc("a")]},
            "no kind": {}, "no kind, key descending": {"order": [desc("__key__")]},
            "a then b": {"kind": L, "order": [asc("a"), asc("b")]}, "b then a": {"kind": L, "order": [asc("b"), asc("a")]},
-           "b": {"kind": L, "order": [asc("b")]}}
+           "b": {"kind": L, "order": [asc("b")]},
+           # Properties no entity has, and one property past the key (more is D096).
+           "z": {"kind": L, "order": [asc("z")]}, "z descending": {"kind": L, "order": [desc("z")]},
+           "z descending then y": {"kind": L, "order": [desc("z"), asc("y")]},
+           "key then a": {"kind": L, "order": [asc("__key__"), asc("a")]},
+           "key descending then a": {"kind": L, "order": [desc("__key__"), asc("a")]},
+           "key then a descending": {"kind": L, "order": [asc("__key__"), desc("a")]},
+           "key then z": {"kind": L, "order": [asc("__key__"), asc("z")]}}
 for source, q in SOURCES.items():
     xc(f"cursor source: {source}", dict(q, limit=2), defines={f"x {source}": "batch.endCursor"})
 xc("cursor source: in another namespace", {"kind": L, "limit": 1}, defines={"x other namespace": "batch.endCursor"},

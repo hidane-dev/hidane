@@ -40,12 +40,16 @@ it, each of a disjunction alike, or none); the kind's name; empty names; limit, 
 (well formed and open) or the read time of a read-only transaction they begin (to the
 microsecond, then past the epoch); one kind; a
 disjunction of ancestors alone (an internal error); cursors; a read time (to the microsecond,
-then past the epoch); at most 30 disjunctions; orders; then, after the index, the
+then past the epoch); at most 30 disjunctions; orders; then, after the index, at most 100
+filters, orders and ancestors (the filters of each disjunction, a `NOT_IN` one per value; each
+property ordered by, filtered by an inequality, projected or distinct on, with the key; one for
+an ancestor; in an `IN`, a `NOT_IN` and the disjunctions, NaN is NaN and -0.0 is 0.0), the
 ancestor's namespace, orders without a kind (the explicit ones, then the distinct, inequality
 and projected properties), distinct on the key, a reserved name projected (`__`, at least one
 character, `__`), a property projected twice (the key may be), distinct on a reserved name, the
 walk above, distinct properties ordered first, the cursors' kind, and the queries of kinds and
-namespaces (refused only a first order descending). (With `--require_indexes`,
+namespaces (refused only a first order descending; they count their filters and orders
+last). (With `--require_indexes`,
 `datastore_indexes.json`, looking up the index of a query without a kind refuses its orders and
 property filters already.) An aggregation's query goes through other checks, worded otherwise
 (`Missing filter operator.`, `limit is negative`): the read options' transaction or the read
@@ -56,7 +60,9 @@ the ancestor's key before its namespace), the whole read time with the cursors, 
 ancestor that is another one is a duplicate, and an ancestor in a disjunction, `NOT_IN` with
 `IN`, several `NOT_EQUAL` and entity operands pass, while an array in an operand is an internal
 error (`UNKNOWN`, no message), after the key's operands and the equalities on projected and
-distinct properties and before a property filter without a kind.
+distinct properties and before a property filter without a kind. Its filters, orders and
+ancestor are counted once its limit and offset are checked, with the properties its sums and
+averages read among the orders.
 
 Each case is a request and its answer in the format of `datastore_entities.json` (without what
 `every_case` gives them all), on one line. `crates/hidane/tests/datastore.rs` replays it.
@@ -129,6 +135,14 @@ def prop(name):
 ANCESTOR = pf("__key__", "HAS_ANCESTOR", {"keyValue": key("K", "a")})
 
 
+def equalities(n):
+    return [pf(f"e{k}", "EQUAL", ONE) for k in range(n)]
+
+
+# Ten disjunctions of eleven filters each: more than 100 filters, orders and ancestors.
+TERMS = composite("AND", pf("t", "IN", numbers(10)), *equalities(10))
+
+
 # A problem of a query: the parts of the query it sets (`filter` is a filter joined with the
 # other problem's), by name.
 QUERY = {
@@ -196,6 +210,7 @@ QUERY = {
     "a kind query ordered descending by a property": {"kind": [{"name": "__kind__"}],
                                                       "order": [{**prop("a"), "direction": "DESCENDING"}]},
     "36 disjunctions": {"filter": composite("AND", pf("d", "IN", numbers(6)), pf("e", "IN", numbers(6)))},
+    "110 filters": {"filter": TERMS},
 }
 
 LONG = "s" * 1501
@@ -394,14 +409,14 @@ REPRESENTATIVE = [
     "IN arrays", "an ancestor in a disjunction", "an empty kind", "an empty projected name", "a negative limit",
     "two NOT_EQUAL", "NOT_IN with IN", "two kinds", "IN an empty array", "an ancestor that is not a key",
     "a cursor that does not parse", "36 disjunctions", "a property ordered twice", "an order without a kind",
-    "a key filter on a string", "a projection of an equality", "a kind query with a property filter",
+    "a key filter on a string", "a projection of an equality", "a kind query with a property filter", "110 filters",
 ]
 AGGREGATION_REPRESENTATIVE = [
     "an aggregation without an operator", "a negative up_to", "two kinds", "an empty filter", "a filter without a value",
     "IN an empty array", "two ancestors", "a cursor that does not parse", "36 disjunctions", "a property ordered twice",
     "six aggregations", "a reserved kind", "a negative limit", "an ancestor in another namespace",
     "a filter without a kind", "a projection of an equality", "an array operand", "a key filter on a string",
-    "an empty projected name", "no aggregations",
+    "an empty projected name", "no aggregations", "110 filters",
 ]
 
 # A problem of an aggregation query: aggregations it adds, and parts of the nested query it sets.
@@ -459,6 +474,7 @@ AGGREGATION = {
     "distinct on a reserved name": {"distinctOn": [{"name": "__x__"}]},
     "distinct on an equality": {"distinctOn": [{"name": "a"}], "filter": pf("a", "EQUAL", ONE)},
     "36 disjunctions": {"filter": composite("AND", pf("d", "IN", numbers(6)), pf("e", "IN", numbers(6)))},
+    "110 filters": {"filter": TERMS},
 }
 
 # Problems of an aggregation's query in one part, where the pairs cannot put two.
@@ -617,6 +633,69 @@ PARTS = {
     "a reserved name projected, then a property twice": {"projection": [prop("__x__"), prop("a"), prop("a")]},
 }
 
+NAN = {"doubleValue": "NaN"}
+# `IN` 9 values and ten equalities: 99 filters; `IN` 10 values and nine equalities: 100.
+T99 = [pf("t", "IN", numbers(9)), *equalities(10)]
+T100 = [pf("t", "IN", numbers(10)), *equalities(9)]
+# How many filters, orders and ancestors a query has, each query alone (both RPCs): the filters
+# of each disjunction, the properties the query orders by, and its ancestor.
+TERM_COUNTS = {
+    "99 filters": {"filter": composite("AND", *T99)},
+    "99 filters and an order": {"filter": composite("AND", *T99), "order": [prop("a")]},
+    "99 filters, ordered by the key": {"filter": composite("AND", *T99), "order": [prop("__key__")]},
+    "99 filters and an ancestor": {"filter": composite("AND", *T99, ANCESTOR)},
+    "98 filters and an ancestor": {"filter": composite("AND", pf("t", "IN", numbers(7)), *equalities(13), ANCESTOR)},
+    "100 filters": {"filter": composite("AND", *T100)},
+    "100 filters, ordered by the key then a": {"filter": composite("AND", *T100), "order": [prop("__key__"), prop("a")]},
+    "100 filters, ordered by a, b and c": {"filter": composite("AND", *T100), "order": [prop("a"), prop("b"), prop("c")]},
+    "100 filters, ordered by a descending": {"filter": composite("AND", *T100),
+                                              "order": [{**prop("a"), "direction": "DESCENDING"}]},
+    "100 filters, projecting a and b, ordered by b": {"filter": composite("AND", *T100), "projection": [prop("a"), prop("b")],
+                                                      "order": [prop("b")]},
+    "100 filters, projecting the key": {"filter": composite("AND", *T100), "projection": [prop("__key__")]},
+    "100 filters, distinct on a": {"filter": composite("AND", *T100), "projection": [prop("a")], "distinctOn": [{"name": "a"}]},
+    "100 filters and a > 1, ordered by a then b": {"filter": composite("AND", *T100, pf("a", "GREATER_THAN", ONE)),
+                                                   "order": [prop("a"), prop("b")]},
+    "100 filters and a != 1": {"filter": composite("AND", *T100, pf("a", "NOT_EQUAL", ONE))},
+    "100 filters and the key > a key": {"filter": composite("AND", *T100, pf("__key__", "GREATER_THAN", {"keyValue": key("K", "a")}))},
+    "99 filters and NOT_IN 1, 1 and null": {"filter": composite("AND", *T99, pf("a", "NOT_IN", array(ONE, ONE, {"nullValue": None})))},
+    "99 filters and NOT_IN NaN, NaN, 0.0 and -0.0": {
+        "filter": composite("AND", *T99, pf("a", "NOT_IN", array(NAN, NAN, {"doubleValue": 0.0}, {"doubleValue": -0.0})))},
+    "IN NaN, NaN, 0.0, -0.0, 1 and 1.0, and 25 equalities": {
+        "filter": composite("AND", pf("a", "IN", array(NAN, NAN, {"doubleValue": 0.0}, {"doubleValue": -0.0}, ONE,
+                                                      {"doubleValue": 1.0})), *equalities(25))},
+    "IN entities of NaN and of -0.0, each twice, and 25 equalities": {
+        "filter": composite("AND", pf("a", "IN", array(*[{"entityValue": {"properties": {"x": v}}}
+                                                         for v in (NAN, NAN, {"doubleValue": -0.0}, {"doubleValue": 0.0})])),
+                            *equalities(25))},
+    "100 filters and b = NaN or b = NaN": {"filter": composite("AND", *T100, composite("OR", pf("b", "EQUAL", NAN),
+                                                                                       pf("b", "EQUAL", NAN)))},
+    "99 filters and b = 1 or c = 1 and d = 1": {
+        "filter": composite("AND", *T99, composite("OR", pf("b", "EQUAL", ONE),
+                                                   composite("AND", pf("c", "EQUAL", ONE), pf("d", "EQUAL", ONE))))},
+    "IN NaN, NaN and 1, and IN 11 values": {"filter": composite("AND", pf("a", "IN", array(NAN, NAN, ONE)),
+                                                                 pf("b", "IN", numbers(11)))},
+    "IN -0.0, 0.0 and 1, and IN 11 values": {"filter": composite("AND", pf("a", "IN", array({"doubleValue": -0.0},
+                                                                                            {"doubleValue": 0.0}, ONE)),
+                                                                  pf("b", "IN", numbers(11)))},
+    "IN 1, 1.0 and 2, and IN 11 values": {"filter": composite("AND", pf("a", "IN", array(ONE, {"doubleValue": 1.0},
+                                                                                          {"integerValue": "2"})),
+                                                               pf("b", "IN", numbers(11)))},
+}
+# What an aggregation adds to them: the properties it sums or averages.
+TERM_AGGREGATIONS = {
+    "100 filters, a sum of b": {"filter": composite("AND", *T100), "aggregations": [{"sum": {"property": {"name": "b"}}, "alias": "s"}]},
+    "100 filters, a sum of b and an average of c": {
+        "filter": composite("AND", *T100), "aggregations": [{"sum": {"property": {"name": "b"}}, "alias": "s"},
+                                                            {"avg": {"property": {"name": "c"}}, "alias": "v"}]},
+    "100 filters, a sum of b, ordered by the key": {"filter": composite("AND", *T100), "order": [prop("__key__")],
+                                                    "aggregations": [{"sum": {"property": {"name": "b"}}, "alias": "s"}]},
+    "100 filters, a sum of b, projecting b": {"filter": composite("AND", *T100), "projection": [prop("b")],
+                                              "aggregations": [{"sum": {"property": {"name": "b"}}, "alias": "s"}]},
+    "98 filters, a sum of b": {"filter": composite("AND", pf("t", "IN", numbers(7)), *equalities(13)),
+                               "aggregations": [{"sum": {"property": {"name": "b"}}, "alias": "s"}]},
+}
+
 
 def fits(*problems):
     """Whether problems set different parts of a query (filters and aggregations add up)."""
@@ -715,10 +794,13 @@ def main():
                 + record("query", [(name, query_body([p])) for name, p in PARTS.items()])
                 + record("query", paired(OPERANDS, QUERY, REPRESENTATIVE, query_body))
                 + record("query", [(name, query_body([p])) for name, p in operand_values()])
+                + record("query", [(name, query_body([p])) for name, p in TERM_COUNTS.items()])
                 + record("aggregation", cases(AGGREGATION, aggregation_body))
                 + record("aggregation", [(name, aggregation_body([p])) for name, p in AGGREGATION_PARTS.items()])
                 + record("aggregation", paired(OPERANDS, AGGREGATION, AGGREGATION_REPRESENTATIVE, aggregation_body))
-                + record("aggregation", [(name, aggregation_body([p])) for name, p in operand_values()]))
+                + record("aggregation", [(name, aggregation_body([p])) for name, p in operand_values()])
+                + record("aggregation", [(name, aggregation_body([p]))
+                                         for name, p in {**TERM_COUNTS, **TERM_AGGREGATIONS}.items()]))
     sys.stdout.write('{\n "oracle": "cloud-firestore-emulator v1.22.0 (sha256 '
                      '9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",\n'
                      ' "generated_by": "tools/oracle/datastore_checks.py",\n'

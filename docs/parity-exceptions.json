@@ -1602,7 +1602,7 @@
    "area": "queries",
    "topic": null,
    "kind": "more-correct",
-   "official": "In Datastore mode, a cursor of a query ordered by its key alone (or of a query without a kind) given to a query ordered by its key and then by properties is an internal error in some combinations of those properties' directions, whatever the rows; the other cursors of other queries are read as `tools/oracle/datastore_queries.py` records",
+   "official": "In Datastore mode, a cursor of a query ordered by its key alone (or of a query without a kind) given to a query ordered by its key and then by two or more properties is an internal error in some combinations of those properties' directions, whatever the rows; the other cursors of other queries are read as `tools/oracle/datastore_queries.py` records",
    "firestore": null,
    "hidane": "Reads such a cursor by its values alone: the key it ends on is not compared, and the query answers",
    "reason": "Bug (an internal error); a cursor is meant for the query that gave it",
