@@ -117,6 +117,13 @@ DATASET += [
     (key(("E", "e1"), ns="xg"), {"b": ARR(I(1), I(2)), "c": I(1), "d": ARR(I(5), I(6))}),
     (key(("E", "e2"), ns="xg"), {"b": ARR(I(2), I(3)), "c": I(2), "d": I(7)}),
 ]
+# Entity values with keys, for property masks, in a namespace of their own.
+KEYED = {"entityValue": {"key": key(("In", "i1")), "properties": {
+    "x": I(1), "y": I(2), "sub": {"entityValue": {"key": key(("Sub", 3)), "properties": {"z": I(3)}}}}}}
+DATASET += [
+    (key(("M", "m1"), ns="xm"), {"e": KEYED, "arr": ARR(KEYED, I(5)), "n": I(1)}),
+    (key(("M", "m2"), ns="xm"), {"n": I(2), "s": S("s")}),
+]
 # More cursors of other queries, in a namespace of their own.
 DATASET += [
     (key(("D", "d1"), ns="xd"), {"t": ARR(NULL)}),
@@ -400,6 +407,28 @@ for name, order, aggregations in [
         case(f"{which} of D 'c then a' in {name}", "runAggregationQuery",
              {"aggregationQuery": {"nestedQuery": {"kind": D, "order": order, which: "<xd c then a>"},
                                    "aggregations": aggregations}, "partitionId": {"namespaceId": XD}})
+
+# --- property masks -----------------------------------------------------------------------------
+# A query's property mask keeps of each entity what a lookup's keeps: a path into an entity value
+# keeps it without its key; a projection (but of the key alone) may not have one.
+XM = {"namespaceId": "xm"}
+for name, paths in [("n", ["n"]), ("n and s", ["n", "s"]), ("e.x", ["e.x"]), ("e.sub", ["e.sub"]),
+                    ("e.sub.z", ["e.sub.z"]), ("e", ["e"]), ("arr.x", ["arr.x"]), ("nothing", []),
+                    ("a property no entity has", ["nope"]), ("the key", ["__key__"]), ("`e`.`x`", ["`e`.`x`"])]:
+    query(f"a property mask of {name}", {"kind": kind("M")}, partitionId=XM, propertyMask={"paths": paths})
+    case(f"a lookup's property mask of {name}", "lookup",
+         {"keys": [key(("M", "m1"), ns="xm"), key(("M", "m2"), ns="xm")], "propertyMask": {"paths": paths}})
+query("a property mask of n, keys only", {"kind": kind("M"), "projection": [{"property": {"name": "__key__"}}]},
+      partitionId=XM, propertyMask={"paths": ["n"]})
+query("a property mask of n, projecting n", {"kind": kind("M"), "projection": [{"property": {"name": "n"}}]},
+      partitionId=XM, propertyMask={"paths": ["n"]})
+case("a property mask of n, in GQL", "runQuery", {"gqlQuery": {"queryString": "SELECT * FROM M"}, "partitionId": XM,
+                                                   "propertyMask": {"paths": ["n"]}})
+case("a property mask of n, projecting n in GQL", "runQuery", {"gqlQuery": {"queryString": "SELECT n FROM M"},
+                                                                "partitionId": XM, "propertyMask": {"paths": ["n"]}})
+query("a property mask of n, of __kind__", {"kind": kind("__kind__")}, partitionId=XM, propertyMask={"paths": ["n"]})
+query("a property mask of n, of __property__", {"kind": kind("__property__")}, partitionId=XM,
+      propertyMask={"paths": ["n"]})
 
 # --- metadata ----------------------------------------------------------------------------------
 query("__kind__", {"kind": kind("__kind__")})

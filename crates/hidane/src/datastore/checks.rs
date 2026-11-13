@@ -12,7 +12,7 @@
 //! first early refusal as its error, and the first late one, if any, as its value.
 
 use hidane_proto::google::datastore::v1::{
-    AggregationQuery, Filter, Key, PropertyFilter, Query, Value,
+    AggregationQuery, Filter, Key, PropertyFilter, PropertyMask, Query, Value,
     aggregation_query::aggregation::Operator as Aggregation, composite_filter, filter::FilterType,
     property_filter::Operator, property_order::Direction, value::ValueType,
 };
@@ -21,7 +21,8 @@ use tonic::Status;
 use super::keys::{Database, Id, Located, entity_ref, reserved};
 use super::query::{MAX_IN, MAX_NOT_IN, cursor_parses, cursors_match};
 use super::values::{
-    check_aggregation_operand, check_aggregation_operand_late, check_filter_operand, is_vector,
+    check_aggregation_operand, check_aggregation_operand_late, check_filter_operand, check_paths,
+    is_vector,
 };
 
 /// The first refusal that comes once the query's index is found, or the first before it.
@@ -539,13 +540,15 @@ fn grouped_first(query: &Query) -> Result<(), Status> {
 }
 
 /// The checks of `RunQuery`'s query, in `namespace` of `database`; `read_time` the verdict on
-/// the request's read time, which comes after the cursors.
+/// the request's read time, which comes after the cursors, and `mask` the request's property
+/// mask, whose paths come after the read time.
 pub fn entity_query(
     query: &Query,
     namespace: &str,
     database: &Database,
     read_time: Result<(), Status>,
     read_options: Result<(), Status>,
+    mask: Option<&PropertyMask>,
 ) -> Checked {
     let all = filters(query.filter.as_ref());
     for (filter, _) in &all {
@@ -591,9 +594,12 @@ pub fn entity_query(
     }
     cursors(query)?;
     read_time?;
+    if let Some(mask) = mask {
+        check_paths(&mask.paths)?;
+    }
     disjunctions(query)?;
     duplicate_order(query)?;
-    Ok(entity_late(query, namespace, database, &all).err())
+    Ok(entity_late(query, namespace, database, &all, mask.is_some()).err())
 }
 
 /// The ancestor a filter holds to: its own (`HAS_ANCESTOR`), the one of a conjunction's
@@ -869,12 +875,14 @@ pub fn kindless(query: &Query) -> Result<(), Status> {
     Ok(())
 }
 
-/// The checks of `RunQuery`'s query once its index is found.
+/// The checks of `RunQuery`'s query once its index is found; `masked` whether the request has a
+/// property mask, which a projection (but of the key alone) may not have.
 fn entity_late(
     query: &Query,
     namespace: &str,
     database: &Database,
     all: &[(&Filter, bool)],
+    masked: bool,
 ) -> Result<(), Status> {
     // The queries of kinds and namespaces count their filters and orders once they are checked.
     let of_metadata = matches!(
@@ -883,6 +891,16 @@ fn entity_late(
     );
     if !of_metadata {
         terms(query, all, &[])?;
+    }
+    if masked
+        && query
+            .projection
+            .iter()
+            .any(|p| p.property.as_ref().is_none_or(|p| p.name != "__key__"))
+    {
+        return Err(invalid(
+            "property masks are not allowed on projection queries",
+        ));
     }
     ancestor_databases(all, database)?;
     ancestor_namespace(all, namespace)?;
