@@ -161,6 +161,27 @@ for paths in COMMIT_MASKS:
 SEQUENCES.append(("an insert with a mask", [
     nontx({"insert": {"key": key("K", "m"), "properties": NEW}, "propertyMask": {"paths": ["e.x", "new"]}}),
     lookup(key("K", "m"))]))
+# A mask keeps properties in the order a Java `HashMap` of their names iterates, and a path into
+# an entity value keeps it without its key.
+KEYED = {"entityValue": {"key": key("In", "i"), "properties": {
+    "x": I(1), "y": I(2), "sub": {"entityValue": {"key": key("Sub", "s"), "properties": {"z": I(3)}}}}}}
+SEQUENCES.append(("a lookup's property masks into entity values with keys", [
+    nontx({"upsert": {"key": key("K", "k"), "properties": {"n": I(1), "s": I(2), "k": KEYED}}})] + [
+    lookup(key("K", "k"), propertyMask={"paths": paths})
+    for paths in (["k.x"], ["k.sub"], ["k.sub.z"], ["k"], ["k.x", "k.sub"], ["n", "s"], ["s", "n"])]))
+# An entity value made to hold what a mask writes is indexed as the written value is.
+EXCLUDED = {"entityValue": {"properties": {"x": I(1), "y": I(2)}}, "excludeFromIndexes": True}
+for name, stored in [("nothing", None), ("a value that is not an entity", {"e": I(5)}),
+                     ("an indexed entity value", {"e": E(y=I(3))})]:
+    SEQUENCES.append((f"a mask into an unindexed entity value, over {name}", (
+        [nontx({"upsert": {"key": key("K", "x"), "properties": stored}})] if stored else []) + [
+        nontx({"upsert": {"key": key("K", "x"), "properties": {"e": EXCLUDED}}, "propertyMask": {"paths": ["e.x"]}}),
+        lookup(key("K", "x"))]))
+SEQUENCES.append(("a mask two entity values deep, unindexed", [
+    nontx({"upsert": {"key": key("K", "x"), "properties": {"e": {"entityValue": {"properties": {"f": EXCLUDED}},
+                                                                 "excludeFromIndexes": True}}},
+           "propertyMask": {"paths": ["e.f.x"]}}),
+    lookup(key("K", "x"))]))
 SEQUENCES.append(("a mask in a transaction, after a write of the same key", [
     begin(), tx({"upsert": {"key": key("K", "m"), "properties": BASE}},
                 {"upsert": {"key": key("K", "m"), "properties": NEW}, "propertyMask": {"paths": ["e.y", "f"]}}),

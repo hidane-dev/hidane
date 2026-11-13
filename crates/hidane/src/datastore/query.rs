@@ -689,7 +689,7 @@ pub fn plan(query: &Query, database: &Database, namespace: &str) -> Result<Plan,
 /// A query's cursors, as the official emulator checks them once the query passed its other
 /// checks: each of the query's namespace and kind, not of a query that ordered by the key before
 /// a property, and with no more values than the query orders by (an aggregation's sums and
-/// averages ordering by their properties too, `read`).
+/// averages ordering by their properties too, `read`), but in a query of kinds or namespaces.
 pub(super) fn cursors_match(query: &Query, namespace: &str, read: &[&str]) -> Result<(), Status> {
     let projection: Vec<String> = query
         .projection
@@ -735,7 +735,8 @@ pub(super) fn cursors_match(query: &Query, namespace: &str, read: &[&str]) -> Re
         if position.key_in_values {
             return Err(invalid("index data should not include primary key"));
         }
-        if position.values.len() > ordered {
+        // The queries of kinds and namespaces read no cursor's values.
+        if position.values.len() > ordered && !matches!(kind, Some("__kind__" | "__namespace__")) {
             return Err(invalid("cursor does not match query"));
         }
     }
@@ -792,8 +793,8 @@ fn orders(
     for name in distinct_on.iter().chain(&inequalities) {
         add(&mut orders, Some(name), last);
     }
-    // The key, when a filter compares it, is the last inequality.
-    if cond.is_some_and(key_inequality) {
+    // The key, when a filter compares it (by equality too), is the last inequality.
+    if cond.is_some_and(key_compared) {
         add(&mut orders, None, last);
     }
     for name in &by_name {
@@ -804,11 +805,11 @@ fn orders(
     (orders, implicit_key, last)
 }
 
-/// Whether a condition compares the key with an inequality.
-fn key_inequality(cond: &Cond) -> bool {
+/// Whether a condition compares the key.
+fn key_compared(cond: &Cond) -> bool {
     match cond {
-        Cond::And(children) | Cond::Or(children) => children.iter().any(key_inequality),
-        Cond::Key { op, .. } => op.inequality(),
+        Cond::And(children) | Cond::Or(children) => children.iter().any(key_compared),
+        Cond::Key { .. } => true,
         Cond::Prop { .. } | Cond::Ancestor(_) => false,
     }
 }
@@ -908,9 +909,27 @@ fn ends_before_value(plan: &Plan, position: &Position) -> bool {
 }
 
 /// A cursor just before its row, with a null value, whose values meet properties and end before
-/// another, all ordered one way, is an internal error on the official emulator, whatever the rows.
+/// another, all ordered one way, is an internal error on the official emulator, whatever the rows;
+/// so is a cursor of a key alone (a query's ordered by its key) where `plan` orders by a property
+/// first, or by the key and then one property (more is D096), when just before its row (its
+/// query's key descending) or the properties do not run one way
+/// (`tools/oracle/datastore_queries.py`).
 fn cursor_errors(plan: &Plan) -> Result<(), Status> {
+    let one_past_the_key = matches!(plan.orders.first(), Some((None, _)))
+        && plan
+            .orders
+            .iter()
+            .filter(|(field, _)| field.is_some())
+            .count()
+            == 1;
     for position in [&plan.start, &plan.end].into_iter().flatten() {
+        if position.values.is_empty()
+            && position.key.is_some()
+            && (ends_before_value(plan, position) || one_past_the_key)
+            && (position.before || !one_way(plan))
+        {
+            return Err(Status::unknown(""));
+        }
         let values_meet_properties = plan
             .orders
             .iter()
@@ -936,7 +955,7 @@ fn cursor_errors(plan: &Plan) -> Result<(), Status> {
 /// it, is matched by its values alone. A position whose values end before a property is an
 /// internal error at a row that matches them, when just before its row and the properties run
 /// one way, or just past it and they do not ([`cursor_errors`] tells of one that errs whatever
-/// the rows); otherwise its key, if any, compares with that property's value.
+/// the rows); otherwise its key, if any, sorts after every value of that property.
 fn compare_position(row: &Row<'_>, position: &Position, plan: &Plan) -> Result<Ordering, Status> {
     let mut i = 0;
     for (at, (field, descending)) in plan.orders.iter().enumerate() {
@@ -951,14 +970,15 @@ fn compare_position(row: &Row<'_>, position: &Position, plan: &Plan) -> Result<O
         if at_key && field.is_some() && position.before == one_way(plan) {
             return Err(Status::unknown(""));
         }
-        let theirs = match (position.values.get(at), &position.key) {
-            (Some(value), _) => value.clone(),
-            (None, Some(key)) if at_key && (field.is_some() || at + 1 == plan.orders.len()) => {
-                key_value(plan, key)
+        let ordering = match (position.values.get(at), &position.key) {
+            (Some(value), _) => own.cmp(value),
+            // A key where a property's value goes sorts after every value, keys too.
+            (None, Some(_)) if at_key && field.is_some() => Ordering::Less,
+            (None, Some(key)) if at_key && at + 1 == plan.orders.len() => {
+                own.cmp(&key_value(plan, key))
             }
             _ => break,
         };
-        let ordering = own.cmp(&theirs);
         let ordering = if *descending {
             ordering.reverse()
         } else {
