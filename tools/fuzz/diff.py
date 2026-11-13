@@ -498,9 +498,13 @@ def in_transaction(step):
 
 def entity_operand(step):
     """An aggregation whose filter orders a property against an entity value (`<`, `<=`, `>`,
-    `>=`, `=`, `IN`)."""
+    `>=`, `=`, `IN`), in a structured query or in GQL, where an entity value can only be bound."""
     body = body_of(step)
-    if not isinstance(body, dict) or not isinstance(body.get("aggregationQuery"), dict):
+    if not isinstance(body, dict):
+        return False
+    if isinstance(body.get("gqlQuery"), dict) and step["path"].endswith(":runAggregationQuery"):
+        return gql_entity_operand(body["gqlQuery"])
+    if not isinstance(body.get("aggregationQuery"), dict):
         return False
 
     def walk(f):
@@ -518,6 +522,30 @@ def entity_operand(step):
 
     nested = body["aggregationQuery"].get("nestedQuery")
     return isinstance(nested, dict) and walk(nested.get("filter"))
+
+
+def gql_entity_operand(gql):
+    """GQL that compares a property with a binding of an entity value (`!=` aside), alone or in
+    an `IN ARRAY(…)`."""
+    text = gql.get("queryString")
+    if not isinstance(text, str):
+        return False
+    named = gql.get("namedBindings") if isinstance(gql.get("namedBindings"), dict) else {}
+    positional = gql.get("positionalBindings") if isinstance(gql.get("positionalBindings"), list) else []
+
+    def entity(site):
+        if site.isdigit():
+            n = int(site)
+            binding = positional[n - 1] if 0 < n <= len(positional) else None
+        else:
+            binding = named.get(site)
+        value = binding.get("value") if isinstance(binding, dict) else None
+        return isinstance(value, dict) and "entityValue" in value
+
+    sites = re.findall(r"(?:<=|>=|<|>|(?<![!<>])=|\bIN)\s*@(\w+)", text, re.IGNORECASE)
+    for listed in re.findall(r"\bIN\s+ARRAY\s*\(([^)]*)\)", text, re.IGNORECASE):
+        sites += re.findall(r"@(\w+)", listed)
+    return any(entity(site) for site in sites)
 
 
 def other_body_project(step):
