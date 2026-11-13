@@ -402,6 +402,14 @@ for which in ("startCursor", "endCursor"):
     xc(f"{which} of D 'distinct on b' in another kind", {"kind": kind("DP"), "order": [asc("b")], which: "<xd distinct on b>"}, ns=XD)
     xc(f"{which} of D 'distinct on b' in another kind, by its key", {"kind": kind("DP"), which: "<xd distinct on b>"}, ns=XD)
     xc(f"{which} of D 'distinct on b' in another namespace", {"kind": D, "order": [asc("b")], which: "<xd distinct on b>"}, ns="xc")
+# The queries of kinds and namespaces read no cursor's values: a cursor without a key is taken,
+# after their own checks.
+for which in ("startCursor", "endCursor"):
+    for name, q in [("__kind__", {"kind": kind("__kind__")}), ("__namespace__", {"kind": kind("__namespace__")}),
+                    ("__namespace__ descending", {"kind": kind("__namespace__"), "order": [desc("__key__")]}),
+                    ("__namespace__ under an ancestor", {"kind": kind("__namespace__"),
+                                                         "filter": pf("__key__", "HAS_ANCESTOR", {"keyValue": key(("P", "p1"), ns=XD)})})]:
+        xc(f"{which} of D 'distinct on b' in {name}", dict(q, **{which: "<xd distinct on b>"}), ns=XD)
 for which in ("startCursor", "endCursor"):
     xc(f"{which} of D 't descending' in 'key', b compared", {"kind": D, "order": [asc("__key__")],
        "filter": pf("b", "LESS_THAN", B(True)), which: "<xd t descending>"}, ns=XD)

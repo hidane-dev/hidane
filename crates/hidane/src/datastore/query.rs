@@ -689,7 +689,7 @@ pub fn plan(query: &Query, database: &Database, namespace: &str) -> Result<Plan,
 /// A query's cursors, as the official emulator checks them once the query passed its other
 /// checks: each of the query's namespace and kind, not of a query that ordered by the key before
 /// a property, and with no more values than the query orders by (an aggregation's sums and
-/// averages ordering by their properties too, `read`).
+/// averages ordering by their properties too, `read`), but in a query of kinds or namespaces.
 pub(super) fn cursors_match(query: &Query, namespace: &str, read: &[&str]) -> Result<(), Status> {
     let projection: Vec<String> = query
         .projection
@@ -735,7 +735,8 @@ pub(super) fn cursors_match(query: &Query, namespace: &str, read: &[&str]) -> Re
         if position.key_in_values {
             return Err(invalid("index data should not include primary key"));
         }
-        if position.values.len() > ordered {
+        // The queries of kinds and namespaces read no cursor's values.
+        if position.values.len() > ordered && !matches!(kind, Some("__kind__" | "__namespace__")) {
             return Err(invalid("cursor does not match query"));
         }
     }

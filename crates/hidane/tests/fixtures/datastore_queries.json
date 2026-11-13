@@ -27535,6 +27535,280 @@
    }
   },
   {
+   "name": "startCursor of D 'distinct on b' in __kind__",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "__kind__"
+      }
+     ],
+     "startCursor": "<xd distinct on b>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Arr\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"C\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"D\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"DP\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"E\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"G\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"H\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"L\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"M\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Many\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Other\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"P\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Q\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"T\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 'distinct on b' in __namespace__",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "__namespace__"
+      }
+     ],
+     "startCursor": "<xd distinct on b>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"id\": \"1\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"ns1\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"ns2\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xa\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xc\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xcns\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xd\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xg\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xk\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xm\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 'distinct on b' in __namespace__ descending",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "__namespace__"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<xd distinct on b>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Only ascending order on __key__ supported\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "startCursor of D 'distinct on b' in __namespace__ under an ancestor",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "__namespace__"
+      }
+     ],
+     "filter": {
+      "propertyFilter": {
+       "property": {
+        "name": "__key__"
+       },
+       "op": "HAS_ANCESTOR",
+       "value": {
+        "keyValue": {
+         "path": [
+          {
+           "kind": "P",
+           "name": "p1"
+          }
+         ],
+         "partitionId": {
+          "namespaceId": "xd"
+         }
+        }
+       }
+      }
+     },
+     "startCursor": "<xd distinct on b>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"ancestor queries on __namespace__ not allowed\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "endCursor of D 'distinct on b' in __kind__",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "__kind__"
+      }
+     ],
+     "endCursor": "<xd distinct on b>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Arr\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"C\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"D\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"DP\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"E\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"G\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"H\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"L\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"M\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Many\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Other\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"P\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Q\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"T\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 'distinct on b' in __namespace__",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "__namespace__"
+      }
+     ],
+     "endCursor": "<xd distinct on b>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"id\": \"1\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"ns1\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"ns2\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xa\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xc\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xcns\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xd\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xg\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xk\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xm\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 'distinct on b' in __namespace__ descending",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "__namespace__"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<xd distinct on b>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Only ascending order on __key__ supported\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "endCursor of D 'distinct on b' in __namespace__ under an ancestor",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "__namespace__"
+      }
+     ],
+     "filter": {
+      "propertyFilter": {
+       "property": {
+        "name": "__key__"
+       },
+       "op": "HAS_ANCESTOR",
+       "value": {
+        "keyValue": {
+         "path": [
+          {
+           "kind": "P",
+           "name": "p1"
+          }
+         ],
+         "partitionId": {
+          "namespaceId": "xd"
+         }
+        }
+       }
+      }
+     },
+     "endCursor": "<xd distinct on b>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"ancestor queries on __namespace__ not allowed\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
    "name": "startCursor of D 't descending' in 'key', b compared",
    "method": "POST",
    "path": "/v1/projects/{project}:runQuery",
