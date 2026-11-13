@@ -19727,6 +19727,129 @@
    }
   },
   {
+   "name": "an allocated id deleted later in the commit",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids10:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "mode": "NON_TRANSACTIONAL",
+    "mutations": [
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task"
+         }
+        ]
+       },
+       "properties": {
+        "n": {
+         "integerValue": "1"
+        }
+       }
+      }
+     },
+     {
+      "delete": {
+       "path": [
+        {
+         "kind": "Task",
+         "id": "5629499534213120"
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"mutationResults\": [{\n    \"key\": {\n      \"partitionId\": {\n        \"projectId\": \"{project}-ids10\"\n      },\n      \"path\": [{\n        \"kind\": \"Task\",\n        \"id\": \"5629499534213120\"\n      }]\n    },\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }, {\n    \"version\": \"<version>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an allocated id deleted later: nothing stored",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids10:lookup",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "keys": [
+     {
+      "path": [
+       {
+        "kind": "Task",
+        "id": "5629499534213120"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"missing\": [{\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}-ids10\"\n        },\n        \"path\": [{\n          \"kind\": \"Task\",\n          \"id\": \"5629499534213120\"\n        }]\n      }\n    },\n    \"version\": \"<version>\"\n  }],\n  \"readTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an allocated id updated later in the commit",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids11:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "mode": "NON_TRANSACTIONAL",
+    "mutations": [
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task"
+         }
+        ]
+       },
+       "properties": {
+        "n": {
+         "integerValue": "1"
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task",
+          "id": "5629499534213120"
+         }
+        ]
+       },
+       "properties": {
+        "n": {
+         "integerValue": "2"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"mutationResults\": [{\n    \"key\": {\n      \"partitionId\": {\n        \"projectId\": \"{project}-ids11\"\n      },\n      \"path\": [{\n        \"kind\": \"Task\",\n        \"id\": \"5629499534213120\"\n      }]\n    },\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }, {\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
    "name": "base versions: store an entity",
    "method": "POST",
    "path": "/v1/projects/{project}-base:commit",
@@ -21742,6 +21865,440 @@
     "status": 400,
     "contentType": "application/json",
     "body": "{\"error\":{\"code\":400,\"message\":\"the id allocated for a new entity was already in use, please try again: app: \\\"{project}-ids9\\\"\\npath <\\n  Element {\\n    type: \\\"Task\\\"\\n    id: 0x14000000000000\\n  }\\n>\\n\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "sequence: begin for an allocated id deleted before",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids12:beginTransaction",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {},
+   "compare": "exact",
+   "defines": "a0",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"transaction\": \"<id>\"\n}\n"
+   }
+  },
+  {
+   "name": "sequence: an allocated id deleted before",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids12:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "mode": "TRANSACTIONAL",
+    "transaction": "<a0>",
+    "mutations": [
+     {
+      "delete": {
+       "path": [
+        {
+         "kind": "Task",
+         "id": "5629499534213120"
+        }
+       ]
+      }
+     },
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task"
+         }
+        ]
+       },
+       "properties": {}
+      }
+     }
+    ]
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "sequence: an allocated id deleted before, nothing written",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids12:lookup",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "keys": [
+     {
+      "path": [
+       {
+        "kind": "Task",
+        "id": "5629499534213120"
+       }
+      ]
+     }
+    ]
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"missing\": [{\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}-ids12\"\n        },\n        \"path\": [{\n          \"kind\": \"Task\",\n          \"id\": \"5629499534213120\"\n        }]\n      }\n    }\n  }],\n  \"readTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "sequence: begin for an allocated id deleted after",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids13:beginTransaction",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {},
+   "compare": "exact",
+   "defines": "a1",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"transaction\": \"<id>\"\n}\n"
+   }
+  },
+  {
+   "name": "sequence: an allocated id deleted after",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids13:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "mode": "TRANSACTIONAL",
+    "transaction": "<a1>",
+    "mutations": [
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task"
+         }
+        ]
+       },
+       "properties": {}
+      }
+     },
+     {
+      "delete": {
+       "path": [
+        {
+         "kind": "Task",
+         "id": "5629499534213120"
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "sequence: an allocated id deleted after, nothing written",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids13:lookup",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "keys": [
+     {
+      "path": [
+       {
+        "kind": "Task",
+        "id": "5629499534213120"
+       }
+      ]
+     }
+    ]
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"missing\": [{\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}-ids13\"\n        },\n        \"path\": [{\n          \"kind\": \"Task\",\n          \"id\": \"5629499534213120\"\n        }]\n      }\n    }\n  }],\n  \"readTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "sequence: begin for an allocated id updated after",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids14:beginTransaction",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {},
+   "compare": "exact",
+   "defines": "a2",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"transaction\": \"<id>\"\n}\n"
+   }
+  },
+  {
+   "name": "sequence: an allocated id updated after",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids14:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "mode": "TRANSACTIONAL",
+    "transaction": "<a2>",
+    "mutations": [
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task"
+         }
+        ]
+       },
+       "properties": {}
+      }
+     },
+     {
+      "update": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task",
+          "id": "5629499534213120"
+         }
+        ]
+       },
+       "properties": {
+        "n": {
+         "integerValue": "2"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "sequence: an allocated id updated after, nothing written",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids14:lookup",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "keys": [
+     {
+      "path": [
+       {
+        "kind": "Task",
+        "id": "5629499534213120"
+       }
+      ]
+     }
+    ]
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"missing\": [{\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}-ids14\"\n        },\n        \"path\": [{\n          \"kind\": \"Task\",\n          \"id\": \"5629499534213120\"\n        }]\n      }\n    }\n  }],\n  \"readTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "sequence: begin for an allocated id inserted after",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids15:beginTransaction",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {},
+   "compare": "exact",
+   "defines": "a3",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"transaction\": \"<id>\"\n}\n"
+   }
+  },
+  {
+   "name": "sequence: an allocated id inserted after",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids15:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "mode": "TRANSACTIONAL",
+    "transaction": "<a3>",
+    "mutations": [
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task"
+         }
+        ]
+       },
+       "properties": {}
+      }
+     },
+     {
+      "insert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task",
+          "id": "5629499534213120"
+         }
+        ]
+       },
+       "properties": {}
+      }
+     }
+    ]
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "sequence: an allocated id inserted after, nothing written",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids15:lookup",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "keys": [
+     {
+      "path": [
+       {
+        "kind": "Task",
+        "id": "5629499534213120"
+       }
+      ]
+     }
+    ]
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"missing\": [{\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}-ids15\"\n        },\n        \"path\": [{\n          \"kind\": \"Task\",\n          \"id\": \"5629499534213120\"\n        }]\n      }\n    }\n  }],\n  \"readTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "sequence: begin for an allocated id updated after at a base version past it",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids16:beginTransaction",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {},
+   "compare": "exact",
+   "defines": "a4",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"transaction\": \"<id>\"\n}\n"
+   }
+  },
+  {
+   "name": "sequence: an allocated id updated after at a base version past it",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids16:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "mode": "TRANSACTIONAL",
+    "transaction": "<a4>",
+    "mutations": [
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task"
+         }
+        ]
+       },
+       "properties": {}
+      }
+     },
+     {
+      "update": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task",
+          "id": "5629499534213120"
+         }
+        ]
+       },
+       "properties": {}
+      },
+      "baseVersion": "1"
+     }
+    ]
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "sequence: an allocated id updated after at a base version past it, nothing written",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids16:lookup",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "keys": [
+     {
+      "path": [
+       {
+        "kind": "Task",
+        "id": "5629499534213120"
+       }
+      ]
+     }
+    ]
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"missing\": [{\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}-ids16\"\n        },\n        \"path\": [{\n          \"kind\": \"Task\",\n          \"id\": \"5629499534213120\"\n        }]\n      }\n    }\n  }],\n  \"readTime\": \"<time>\"\n}\n"
    }
   }
  ]

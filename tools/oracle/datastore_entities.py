@@ -293,6 +293,11 @@ in_project("an allocated id deleted before", "ids5", "commit", {"mode": "NON_TRA
 in_project("allocateIds gives an id in use: store it", "ids6", "commit", {"mode": "NON_TRANSACTIONAL", "mutations": [upsert(key(("Task", FIRST)))]})
 in_project("allocateIds gives an id in use", "ids6", "allocateIds", {"keys": [key(("Task", None))]})
 in_project("the second allocated id in use", "ids7", "commit", {"mode": "NON_TRANSACTIONAL", "mutations": [insert(key(("Task", SECOND))), upsert(key(("Task", None))), upsert(key(("Task", None)))]})
+# A later mutation may name an allocated ID: each result tells of its entity as its mutation
+# left it.
+in_project("an allocated id deleted later in the commit", "ids10", "commit", {"mode": "NON_TRANSACTIONAL", "mutations": [upsert(key(("Task", None)), n=I(1)), delete(key(("Task", FIRST)))]})
+in_project("an allocated id deleted later: nothing stored", "ids10", "lookup", {"keys": [key(("Task", FIRST))]})
+in_project("an allocated id updated later in the commit", "ids11", "commit", {"mode": "NON_TRANSACTIONAL", "mutations": [upsert(key(("Task", None)), n=I(1)), update(key(("Task", FIRST)), n=I(2))]})
 
 # A base version past the entity's is refused, whatever the strategy; a write before it in the
 # commit stays.
@@ -398,6 +403,20 @@ def run_sequences(conn_call):
     step("sequence: store an id before a transaction", "commit", {"mode": "NON_TRANSACTIONAL", "mutations": [upsert(key(("Task", FIRST)))]}, suffix="-ids9")
     begin("t8", "sequence: begin after it", suffix="-ids9")
     step("sequence: an allocated id stored before the transaction", "commit", {"mode": "TRANSACTIONAL", "transaction": "<t8>", "mutations": [upsert(key(("Task", None)))]}, suffix="-ids9")
+    # So is an allocated ID another mutation of the transaction names, before it or after it,
+    # whatever that mutation is, before its own checks.
+    for n, (label, mutations) in enumerate([
+        ("deleted before", [delete(key(("Task", FIRST))), upsert(key(("Task", None)))]),
+        ("deleted after", [upsert(key(("Task", None))), delete(key(("Task", FIRST)))]),
+        ("updated after", [upsert(key(("Task", None))), update(key(("Task", FIRST)), n=I(2))]),
+        ("inserted after", [upsert(key(("Task", None))), insert(key(("Task", FIRST)))]),
+        ("updated after at a base version past it", [upsert(key(("Task", None))),
+                                                      {**update(key(("Task", FIRST))), "baseVersion": "1"}]),
+    ]):
+        suffix = f"-ids{12 + n}"
+        begin(f"a{n}", f"sequence: begin for an allocated id {label}", suffix=suffix)
+        step(f"sequence: an allocated id {label}", "commit", {"mode": "TRANSACTIONAL", "transaction": f"<a{n}>", "mutations": mutations}, suffix=suffix)
+        step(f"sequence: an allocated id {label}, nothing written", "lookup", {"keys": [key(("Task", FIRST))]}, suffix=suffix)
     return out
 
 

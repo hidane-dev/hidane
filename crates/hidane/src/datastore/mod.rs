@@ -1349,7 +1349,10 @@ fn apply(
     // transaction writes everything or nothing; a non-transactional commit keeps the mutations
     // before one that fails, as the official emulator does.
     let mut working: BTreeMap<Located, Option<Stored>> = BTreeMap::new();
-    let mut written: Vec<(Located, bool, bool, i64)> = Vec::with_capacity(checked.len());
+    // Each mutation's key, whether its ID was allocated, its version, and, outside a
+    // transaction, its entity as it left it.
+    let mut written: Vec<(Located, bool, i64, Option<Option<Stored>>)> =
+        Vec::with_capacity(checked.len());
     // Each key a mutation names is kept on record before it applies, even if it fails: every
     // key of a transaction first, a non-transactional commit's one by one.
     let touch = |stored: &mut DatabaseData, mutation: &Checked| match mutation {
@@ -1375,6 +1378,15 @@ fn apply(
             Checked::Delete(located, late) => (late, Some(located.clone()), None),
         };
         late_checks(late, located.as_ref(), op, database)?;
+        // An ID the transaction allocated that a later mutation names is an internal error.
+        if transactional
+            && let Some(located) = &located
+            && written
+                .iter()
+                .any(|(other, allocated, ..)| *allocated && other == located)
+        {
+            return Err(Status::unknown(""));
+        }
         let current = located.as_ref().and_then(|l| match working.get(l) {
             Some(entity) => entity.clone(),
             None => stored.entities.get(l).cloned(),
@@ -1438,11 +1450,10 @@ fn apply(
                         stored.allocated += 1;
                         let located = key.with_id(scattered(stored.allocated));
                         // An ID an entity already has fails the commit, and the counter stays
-                        // past it; one a transaction wrote before is an internal error
-                        // (`tools/oracle/datastore_entities.py`).
+                        // past it; one a transaction wrote or deleted before is an internal
+                        // error (`tools/oracle/datastore_entities.py`).
                         match working.get(&located) {
-                            Some(Some(_)) => return Err(Status::unknown("")),
-                            Some(None) => {}
+                            Some(_) => return Err(Status::unknown("")),
                             None if stored.entities.contains_key(&located) => {
                                 return Err(Status::invalid_argument(format!(
                                     "the id allocated for a new entity was already in use, please try again: {}",
@@ -1476,6 +1487,7 @@ fn apply(
             }
         };
         let deleted = entity.is_none();
+        let left = (!transactional).then(|| entity.clone());
         // A deletion's version: the commit's; for a key not there, the version it was deleted
         // at, or the time it was read missing if it never was there.
         let version = match &current {
@@ -1487,21 +1499,22 @@ fn apply(
         } else {
             stored.put(located.clone(), entity, micros);
         }
-        written.push((located, allocated, deleted, version));
+        written.push((located, allocated, version, left));
     }
     for (located, entity) in working {
         stored.put(located, entity, micros);
     }
-    // Each result tells of its entity as the commit left it.
+    // Each result of a transaction tells of its entity as the commit left it; outside one, as
+    // its mutation left it (a later one may name an ID allocated before).
     let results = written
         .into_iter()
-        .map(|(located, allocated, deleted, version)| {
+        .map(|(located, allocated, version, left)| {
             let key = allocated.then(|| database.key(&located));
-            match stored
-                .entities
-                .get(&located)
-                .filter(|_| !deleted || transactional)
-            {
+            let entity = match left {
+                Some(left) => left,
+                None => stored.entities.get(&located).cloned(),
+            };
+            match entity {
                 Some(entity) => MutationResult {
                     key,
                     version: entity.version,
