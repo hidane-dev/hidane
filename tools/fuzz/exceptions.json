@@ -113,7 +113,7 @@
   {
    "id": "keys-only-cursor-after-the-key",
    "exception": "D096",
-   "why": "A cursor of a query ordered by its key alone, given to a query ordered by its key and then by properties, is an internal error on the official emulator in some combinations of directions, whatever the rows; hidane reads it by its values. Matched on the request.",
+   "why": "A cursor of a query ordered by its key alone, given to a query ordered by its key and then by two or more properties, is an internal error on the official emulator in some combinations of directions, whatever the rows; hidane reads it by its values. Matched on the request.",
    "kinds": ["crash"],
    "verbs": "^datastore:runQuery$",
    "official": {"status": 500},
