@@ -22,8 +22,8 @@
    "evidence": [
     {
      "kind": "replay",
-     "count": 54378,
-     "description": "54,378 recorded answers of the official emulator v1.22.0 in 78 fixtures, replayed against hidane by cargo test",
+     "count": 54396,
+     "description": "54,396 recorded answers of the official emulator v1.22.0 in 78 fixtures, replayed against hidane by cargo test",
      "where": "docs/parity.md",
      "runs": "every pull request and push to main",
      "last_recorded": null
@@ -49,21 +49,21 @@
  ],
  "oracle_corpus": {
   "where": "docs/oracle-corpus.json",
-  "digest": "sha256:bb414f5be2b67be19f8d06100675b68a7d7ce8920f1054076b95c429a150984f",
+  "digest": "sha256:de082f87936682ad2ab8b076d485e07965dc5c3c7a3ad947f7dedcc7118421ac",
   "releases": [
    "1.22.0"
   ],
   "files": 138,
   "fixtures": 78,
   "transcripts": 60,
-  "answers": 54378,
-  "bytes": 38525212
+  "answers": 54396,
+  "bytes": 38538688
  },
  "replay": {
   "fixtures": 78,
-  "answers": 54378,
+  "answers": 54396,
   "levels": {
-   "full": 43022,
+   "full": 43040,
    "reasons": 4344,
    "part": 1517,
    "status": 5197,
@@ -168,8 +168,8 @@
    },
    "datastore": {
     "fixtures": 13,
-    "answers": 18228,
-    "full": 18201,
+    "answers": 18246,
+    "full": 18219,
     "transports": [
      "gRPC",
      "REST"
