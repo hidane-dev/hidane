@@ -938,6 +938,7 @@ impl Datastore for DatastoreService {
             &database,
             past_epoch(req.read_options.as_ref()),
             self.read_options_early(req.read_options.as_ref(), &database),
+            req.property_mask.as_ref(),
         )?;
         let plan = query::plan(&query, &database, &namespace)?;
         let reading = self.read_query(
@@ -964,10 +965,18 @@ impl Datastore for DatastoreService {
         } else {
             query::metadata(&plan, &entities, &stored.touched, &database, read)
         };
-        let batch = match metadata {
+        let mut batch = match metadata {
             Some(batch) => batch,
             None => query::run(&plan, &entities, &database, read)?,
         };
+        // A property mask keeps of each entity what a lookup's keeps.
+        if let Some(mask) = &req.property_mask {
+            for result in &mut batch.entity_results {
+                if let Some(entity) = &mut result.entity {
+                    entity.properties = values::masked(entity, mask);
+                }
+            }
+        }
         Ok(Response::new(RunQueryResponse {
             batch: Some(batch),
             query: echo,

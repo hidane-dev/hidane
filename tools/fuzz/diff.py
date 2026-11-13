@@ -303,6 +303,9 @@ def classify(step, official, hidane):
         elif found[1] and "<auto>" in repr(at(o_parsed, found[0])):
             # Generated document IDs are masked: where one comes among others is chance.
             return None
+        elif generated_in_its_place(o_parsed, h_parsed, found[0]):
+            # So is which document a page holds, when one side's is a generated ID's.
+            return None
         else:
             kind = "order" if found[1] else "data"
             detail = generalize(found[0])
@@ -316,6 +319,19 @@ def classify(step, official, hidane):
         if value is not None:
             out[side]["value"] = value
     return out
+
+
+def generated_in_its_place(o_parsed, h_parsed, path):
+    """Whether `path` runs through an element of a list that is another document on each side,
+    one of them named by a generated ID (masked `<auto>`)."""
+    for n, part in enumerate(path):
+        if isinstance(part, int):
+            names = [element.get("name") if isinstance(element, dict) else None
+                     for element in (at(o_parsed, path[:n + 1]), at(h_parsed, path[:n + 1]))]
+            if (all(isinstance(name, str) for name in names) and names[0] != names[1]
+                    and any("<auto>" in name for name in names)):
+                return True
+    return False
 
 
 def at(parsed, path):
@@ -498,9 +514,13 @@ def in_transaction(step):
 
 def entity_operand(step):
     """An aggregation whose filter orders a property against an entity value (`<`, `<=`, `>`,
-    `>=`, `=`, `IN`)."""
+    `>=`, `=`, `IN`), in a structured query or in GQL, where an entity value can only be bound."""
     body = body_of(step)
-    if not isinstance(body, dict) or not isinstance(body.get("aggregationQuery"), dict):
+    if not isinstance(body, dict):
+        return False
+    if isinstance(body.get("gqlQuery"), dict) and step["path"].endswith(":runAggregationQuery"):
+        return gql_entity_operand(body["gqlQuery"])
+    if not isinstance(body.get("aggregationQuery"), dict):
         return False
 
     def walk(f):
@@ -518,6 +538,30 @@ def entity_operand(step):
 
     nested = body["aggregationQuery"].get("nestedQuery")
     return isinstance(nested, dict) and walk(nested.get("filter"))
+
+
+def gql_entity_operand(gql):
+    """GQL that compares a property with a binding of an entity value (`!=` aside), alone or in
+    an `IN ARRAY(…)`."""
+    text = gql.get("queryString")
+    if not isinstance(text, str):
+        return False
+    named = gql.get("namedBindings") if isinstance(gql.get("namedBindings"), dict) else {}
+    positional = gql.get("positionalBindings") if isinstance(gql.get("positionalBindings"), list) else []
+
+    def entity(site):
+        if site.isdigit():
+            n = int(site)
+            binding = positional[n - 1] if 0 < n <= len(positional) else None
+        else:
+            binding = named.get(site)
+        value = binding.get("value") if isinstance(binding, dict) else None
+        return isinstance(value, dict) and "entityValue" in value
+
+    sites = re.findall(r"(?:<=|>=|<|>|(?<![!<>])=|\bIN)\s*@(\w+)", text, re.IGNORECASE)
+    for listed in re.findall(r"\bIN\s+ARRAY\s*\(([^)]*)\)", text, re.IGNORECASE):
+        sites += re.findall(r"@(\w+)", listed)
+    return any(entity(site) for site in sites)
 
 
 def other_body_project(step):

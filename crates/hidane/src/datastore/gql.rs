@@ -288,12 +288,21 @@ impl Lexer {
                     Some(n) if !name_char(n) => return Err(self.error(Some(n), "@")),
                     Some(_) => {}
                 }
+                // A number is a position, its ASCII digits alone: what follows them is the
+                // next token.
+                let position = self.peek().is_some_and(|c| c.is_ascii_digit());
                 let mut text = String::new();
-                while let Some(n) = self.peek().filter(|c| name_char(*c)) {
+                while let Some(n) = self.peek().filter(|c| {
+                    if position {
+                        c.is_ascii_digit()
+                    } else {
+                        name_char(*c)
+                    }
+                }) {
                     self.bump();
                     text.push(n);
                 }
-                let kind = if !text.is_empty() && text.chars().all(|c| c.is_ascii_digit()) {
+                let kind = if position {
                     Kind::PositionBinding
                 } else {
                     Kind::NameBinding
@@ -1855,12 +1864,22 @@ impl<'a> Bindings<'a> {
                 .copied()
                 .ok_or_else(|| invalid(format!("Absent named binding: {}.", site.text)));
         }
-        let n: usize = site.text.parse().unwrap_or(0);
-        let parameter = n
-            .checked_sub(1)
-            .and_then(|i| self.positional.get(i))
+        // A position is read as a 64-bit integer, of at least 1.
+        let n: i64 = site.text.parse().map_err(|_| {
+            invalid(format!(
+                "Invalid positional binding site: For input string: \"{}\"",
+                site.text
+            ))
+        })?;
+        if n == 0 {
+            return Err(invalid("Invalid binding site @0."));
+        }
+        let i = usize::try_from(n - 1).unwrap_or(usize::MAX);
+        let parameter = self
+            .positional
+            .get(i)
             .ok_or_else(|| invalid(format!("Absent positional binding: {n}.")))?;
-        self.used[n - 1] = true;
+        self.used[i] = true;
         Ok(parameter)
     }
 }

@@ -117,6 +117,17 @@ DATASET += [
     (key(("E", "e1"), ns="xg"), {"b": ARR(I(1), I(2)), "c": I(1), "d": ARR(I(5), I(6))}),
     (key(("E", "e2"), ns="xg"), {"b": ARR(I(2), I(3)), "c": I(2), "d": I(7)}),
 ]
+# Keys as property values, for a cursor's key where a property's value goes, in a namespace of
+# their own.
+DATASET += [(key(("L", "k1"), ns="xk"), {"k": KEY(("L", "z9"))}), (key(("L", "k2"), ns="xk"), {"k": KEY(("A", 5))}),
+            (key(("L", "k3"), ns="xk"), {"k": I(7)})]
+# Entity values with keys, for property masks, in a namespace of their own.
+KEYED = {"entityValue": {"key": key(("In", "i1")), "properties": {
+    "x": I(1), "y": I(2), "sub": {"entityValue": {"key": key(("Sub", 3)), "properties": {"z": I(3)}}}}}}
+DATASET += [
+    (key(("M", "m1"), ns="xm"), {"e": KEYED, "arr": ARR(KEYED, I(5)), "n": I(1)}),
+    (key(("M", "m2"), ns="xm"), {"n": I(2), "s": S("s")}),
+]
 # More cursors of other queries, in a namespace of their own.
 DATASET += [
     (key(("D", "d1"), ns="xd"), {"t": ARR(NULL)}),
@@ -311,7 +322,14 @@ TARGETS = {"key": {"kind": L}, "key descending": {"kind": L, "order": [desc("__k
            "a": {"kind": L, "order": [asc("a")]}, "a descending": {"kind": L, "order": [desc("a")]},
            "no kind": {}, "no kind, key descending": {"order": [desc("__key__")]},
            "a then b": {"kind": L, "order": [asc("a"), asc("b")]}, "b then a": {"kind": L, "order": [asc("b"), asc("a")]},
-           "b": {"kind": L, "order": [asc("b")]}}
+           "b": {"kind": L, "order": [asc("b")]},
+           # Properties no entity has, and one property past the key (more is D096).
+           "z": {"kind": L, "order": [asc("z")]}, "z descending": {"kind": L, "order": [desc("z")]},
+           "z descending then y": {"kind": L, "order": [desc("z"), asc("y")]},
+           "key then a": {"kind": L, "order": [asc("__key__"), asc("a")]},
+           "key descending then a": {"kind": L, "order": [desc("__key__"), asc("a")]},
+           "key then a descending": {"kind": L, "order": [asc("__key__"), desc("a")]},
+           "key then z": {"kind": L, "order": [asc("__key__"), asc("z")]}}
 for source, q in SOURCES.items():
     xc(f"cursor source: {source}", dict(q, limit=2), defines={f"x {source}": "batch.endCursor"})
 xc("cursor source: in another namespace", {"kind": L, "limit": 1}, defines={"x other namespace": "batch.endCursor"},
@@ -355,6 +373,12 @@ for name, q, ns in [
 ]:
     xc(f"a cursor of another query: {name}", q, ns=ns)
 
+# A key where a property's value goes sorts after every value, keys too.
+xc("cursor source K: key", {"kind": L, "limit": 1}, defines={"xk key": "batch.endCursor"}, ns="xk")
+for target, order in [("k", [asc("k")]), ("k descending", [desc("k")])]:
+    for which in ("startCursor", "endCursor"):
+        xc(f"{which} of K 'key' in '{target}'", {"kind": L, "order": order, which: "<xk key>"}, ns="xk")
+
 # A distinct query's cursor has no key: no namespace or kind of its own. A cursor's key that
 # meets a value is compared with it, or is an internal error at a row it reaches (just before its
 # row and that value ordered as the first order, or just past it and ordered the other way);
@@ -378,6 +402,14 @@ for which in ("startCursor", "endCursor"):
     xc(f"{which} of D 'distinct on b' in another kind", {"kind": kind("DP"), "order": [asc("b")], which: "<xd distinct on b>"}, ns=XD)
     xc(f"{which} of D 'distinct on b' in another kind, by its key", {"kind": kind("DP"), which: "<xd distinct on b>"}, ns=XD)
     xc(f"{which} of D 'distinct on b' in another namespace", {"kind": D, "order": [asc("b")], which: "<xd distinct on b>"}, ns="xc")
+# The queries of kinds and namespaces read no cursor's values: a cursor without a key is taken,
+# after their own checks.
+for which in ("startCursor", "endCursor"):
+    for name, q in [("__kind__", {"kind": kind("__kind__")}), ("__namespace__", {"kind": kind("__namespace__")}),
+                    ("__namespace__ descending", {"kind": kind("__namespace__"), "order": [desc("__key__")]}),
+                    ("__namespace__ under an ancestor", {"kind": kind("__namespace__"),
+                                                         "filter": pf("__key__", "HAS_ANCESTOR", {"keyValue": key(("P", "p1"), ns=XD)})})]:
+        xc(f"{which} of D 'distinct on b' in {name}", dict(q, **{which: "<xd distinct on b>"}), ns=XD)
 for which in ("startCursor", "endCursor"):
     xc(f"{which} of D 't descending' in 'key', b compared", {"kind": D, "order": [asc("__key__")],
        "filter": pf("b", "LESS_THAN", B(True)), which: "<xd t descending>"}, ns=XD)
@@ -393,6 +425,28 @@ for name, order, aggregations in [
         case(f"{which} of D 'c then a' in {name}", "runAggregationQuery",
              {"aggregationQuery": {"nestedQuery": {"kind": D, "order": order, which: "<xd c then a>"},
                                    "aggregations": aggregations}, "partitionId": {"namespaceId": XD}})
+
+# --- property masks -----------------------------------------------------------------------------
+# A query's property mask keeps of each entity what a lookup's keeps: a path into an entity value
+# keeps it without its key; a projection (but of the key alone) may not have one.
+XM = {"namespaceId": "xm"}
+for name, paths in [("n", ["n"]), ("n and s", ["n", "s"]), ("e.x", ["e.x"]), ("e.sub", ["e.sub"]),
+                    ("e.sub.z", ["e.sub.z"]), ("e", ["e"]), ("arr.x", ["arr.x"]), ("nothing", []),
+                    ("a property no entity has", ["nope"]), ("the key", ["__key__"]), ("`e`.`x`", ["`e`.`x`"])]:
+    query(f"a property mask of {name}", {"kind": kind("M")}, partitionId=XM, propertyMask={"paths": paths})
+    case(f"a lookup's property mask of {name}", "lookup",
+         {"keys": [key(("M", "m1"), ns="xm"), key(("M", "m2"), ns="xm")], "propertyMask": {"paths": paths}})
+query("a property mask of n, keys only", {"kind": kind("M"), "projection": [{"property": {"name": "__key__"}}]},
+      partitionId=XM, propertyMask={"paths": ["n"]})
+query("a property mask of n, projecting n", {"kind": kind("M"), "projection": [{"property": {"name": "n"}}]},
+      partitionId=XM, propertyMask={"paths": ["n"]})
+case("a property mask of n, in GQL", "runQuery", {"gqlQuery": {"queryString": "SELECT * FROM M"}, "partitionId": XM,
+                                                   "propertyMask": {"paths": ["n"]}})
+case("a property mask of n, projecting n in GQL", "runQuery", {"gqlQuery": {"queryString": "SELECT n FROM M"},
+                                                                "partitionId": XM, "propertyMask": {"paths": ["n"]}})
+query("a property mask of n, of __kind__", {"kind": kind("__kind__")}, partitionId=XM, propertyMask={"paths": ["n"]})
+query("a property mask of n, of __property__", {"kind": kind("__property__")}, partitionId=XM,
+      propertyMask={"paths": ["n"]})
 
 # --- metadata ----------------------------------------------------------------------------------
 query("__kind__", {"kind": kind("__kind__")})
@@ -422,6 +476,18 @@ query("the key above p1, order by b descending", {"kind": kind("P"), "filter": p
 query("the key above p1, project a, order by b descending", {
     "kind": kind("P"), "filter": pf("__key__", "GREATER_THAN", KEY(("P", "p1"))), "projection": [asc("a")],
     "order": [desc("b")]})
+# By equality too: the key comes after the inequalities, before the projected properties, in the
+# last order's direction, and a cursor of such a query holds the key among its values.
+P_KEYS = ARR(*[KEY(("P", f"p{n}")) for n in range(1, 6)])
+query("the key in p1 to p5, order by a descending", {"kind": kind("P"), "filter": pf("__key__", "IN", P_KEYS),
+                                                      "order": [desc("a")]})
+query("the key in p1 to p5, project a", {"kind": kind("P"), "filter": pf("__key__", "IN", P_KEYS), "projection": [asc("a")]})
+query("the key in p1 to p5, project a, order by b descending", {
+    "kind": kind("P"), "filter": pf("__key__", "IN", P_KEYS), "projection": [asc("a")], "order": [desc("b")]})
+query("the key = p2, project a", {"kind": kind("P"), "filter": pf("__key__", "EQUAL", KEY(("P", "p2"))),
+                                  "projection": [asc("a")]}, defines={"key equal": "batch.endCursor"})
+query("from the cursor of the key = p2, project a, order by a", {"kind": kind("P"), "order": [asc("a")],
+                                                                  "startCursor": "<key equal>"})
 query("order by b descending", {"kind": kind("P"), "order": [desc("b")]})
 query("a reserved namespace", {"kind": kind("T")}, partitionId={"namespaceId": "__x__"})
 case("a query and a GQL query", "runQuery", {"query": {"kind": kind("T")}, "gqlQuery": {"queryString": "SELECT * FROM T"}})

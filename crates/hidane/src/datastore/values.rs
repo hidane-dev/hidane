@@ -1047,39 +1047,33 @@ fn entity_properties(value: &Value) -> Option<&Properties> {
     }
 }
 
-/// The properties a property mask keeps, in their order: each path names a property, or with
-/// dots a property of an entity value (not of an array's); an entity value that keeps none is
-/// left out.
+/// The properties a property mask keeps, in the order the official emulator's Java `HashMap` of
+/// the mask's names iterates ([`MaskTree`]): each path names a property, or with dots a property
+/// of an entity value (not of an array's), which then keeps no key; an entity value that keeps
+/// none is left out.
 pub fn masked(entity: &Entity, mask: &PropertyMask) -> Properties {
     let paths: Vec<Vec<String>> = mask.paths.iter().map(|p| path_names(p)).collect();
-    let paths: Vec<&[String]> = paths.iter().map(Vec::as_slice).collect();
-    masked_properties(&entity.properties, &paths)
+    masked_properties(&entity.properties, &MaskTree::new(&paths))
 }
 
-fn masked_properties(properties: &Properties, paths: &[&[String]]) -> Properties {
+fn masked_properties(properties: &Properties, tree: &MaskTree) -> Properties {
     let mut out = Properties::new();
-    for (name, value) in properties {
-        let below: Vec<&[String]> = paths
-            .iter()
-            .filter_map(|path| path.split_first())
-            .filter(|(first, _)| *first == name)
-            .map(|(_, rest)| rest)
-            .collect();
-        if below.is_empty() {
+    for (name, below) in &tree.0 {
+        let Some(value) = properties.get(name) else {
             continue;
-        }
-        if below.iter().any(|rest| rest.is_empty()) {
+        };
+        let Some(below) = below else {
             out.insert(name.clone(), value.clone());
             continue;
-        }
+        };
         if let Some(ValueType::EntityValue(inner)) = &value.value_type {
-            let kept_properties = masked_properties(&inner.properties, &below);
+            let kept_properties = masked_properties(&inner.properties, below);
             if kept_properties.is_empty() {
                 continue;
             }
             let mut kept = value.clone();
             kept.value_type = Some(ValueType::EntityValue(Entity {
-                key: inner.key.clone(),
+                key: None,
                 properties: kept_properties,
             }));
             out.insert(name.clone(), kept);
@@ -1110,10 +1104,14 @@ fn write_masked(stored: &mut Properties, written: Option<&Properties>, tree: &Ma
         let value = match below {
             None => written.and_then(|w| w.get(name)).cloned(),
             Some(below) => {
+                // A parent made to hold what is written is indexed as the written value is.
                 let mut parent = match current {
                     Some(v) if entity_properties(v).is_some() => v.clone(),
                     _ => Value {
                         value_type: Some(ValueType::EntityValue(Entity::default())),
+                        exclude_from_indexes: written
+                            .and_then(|w| w.get(name))
+                            .is_some_and(|v| v.exclude_from_indexes),
                         ..Value::default()
                     },
                 };
