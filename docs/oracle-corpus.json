@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:bb414f5be2b67be19f8d06100675b68a7d7ce8920f1054076b95c429a150984f",
+ "digest": "sha256:e1a5d644c96c4d8ebe04ca8c5f1919cb0e1b5f78244552abc76eeb3d99d30646",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -17,10 +17,10 @@
   "files": 138,
   "fixtures": 78,
   "transcripts": 60,
-  "answers": 54378,
-  "bytes": 38525212,
+  "answers": 54883,
+  "bytes": 39344984,
   "levels": {
-   "full": 43022,
+   "full": 43527,
    "reasons": 4344,
    "part": 1517,
    "status": 5197,
@@ -82,14 +82,14 @@
    "datastore": {
     "fixtures": 13,
     "transcripts": 18,
-    "answers": 18228
+    "answers": 18733
    }
   },
   "by_release": {
    "v1.22.0": {
     "fixtures": 78,
     "transcripts": 60,
-    "answers": 54378
+    "answers": 54883
    }
   },
   "by_release_source": {
@@ -2637,13 +2637,13 @@
    },
    "recorded": {
     "first_recorded": "2026-10-17",
-    "last_changed": "2026-10-17"
+    "last_changed": "2026-11-13"
    },
-   "bytes": 5901039,
-   "sha256": "777e47ec3d34cea4cdeb9a16ea894d551874804b8c8df76d580a5ce636ac54fe",
-   "answers": 9914,
+   "bytes": 6595915,
+   "sha256": "d4b5953fe095f7f6e7a1fcb422a1d72c00340d2485b698d2769a677bdd0eaab9",
+   "answers": 10307,
    "levels": {
-    "full": 9914
+    "full": 10307
    },
    "replayed_over": [
     "REST"
@@ -3043,14 +3043,14 @@
     "source": "header"
    },
    "recorded": {
-    "first_recorded": "2026-10-16",
-    "last_changed": "2026-10-18"
+    "first_recorded": "2026-10-17",
+    "last_changed": "2026-11-13"
    },
-   "bytes": 2726769,
-   "sha256": "2d1455edacb2515b936dcf1bd4b72f395d8ec821869f574eac653ea07824b2e7",
-   "answers": 615,
+   "bytes": 2851665,
+   "sha256": "06abdf56799e0523b7b0b22fbb9e51a00014e055bf471dab5d56d519d7ebd9e0",
+   "answers": 727,
    "levels": {
-    "full": 615
+    "full": 727
    },
    "replayed_over": [
     "REST"
