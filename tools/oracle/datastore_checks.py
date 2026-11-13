@@ -40,11 +40,12 @@ it, each of a disjunction alike, or none); the kind's name; empty names; limit, 
 (well formed and open) or the read time of a read-only transaction they begin (to the
 microsecond, then past the epoch); one kind; a
 disjunction of ancestors alone (an internal error); cursors; a read time (to the microsecond,
-then past the epoch); at most 30 disjunctions; orders; then, after the index, at most 100
-filters, orders and ancestors (the filters of each disjunction, a `NOT_IN` one per value; each
-property ordered by, filtered by an inequality, projected or distinct on, with the key; one for
-an ancestor; in an `IN`, a `NOT_IN` and the disjunctions, NaN is NaN and -0.0 is 0.0), the
-ancestor's namespace, orders without a kind (the explicit ones, then the distinct, inequality
+then past the epoch); the paths of the request's property mask; at most 30 disjunctions;
+orders; then, after the index, at most 100 filters, orders and ancestors (the filters of each
+disjunction, a `NOT_IN` one per value; each property ordered by, filtered by an inequality,
+projected or distinct on, with the key; one for an ancestor; in an `IN`, a `NOT_IN` and the
+disjunctions, NaN is NaN and -0.0 is 0.0), no property mask on a projection (but of the key
+alone), the ancestor's namespace, orders without a kind (the explicit ones, then the distinct, inequality
 and projected properties), distinct on the key, a reserved name projected (`__`, at least one
 character, `__`), a property projected twice (the key may be), distinct on a reserved name, the
 walk above, distinct properties ordered first, the cursors' kind, and the queries of kinds and
@@ -211,6 +212,8 @@ QUERY = {
                                                       "order": [{**prop("a"), "direction": "DESCENDING"}]},
     "36 disjunctions": {"filter": composite("AND", pf("d", "IN", numbers(6)), pf("e", "IN", numbers(6)))},
     "110 filters": {"filter": TERMS},
+    "an empty mask path": {"propertyMask": {"paths": [""]}},
+    "a mask on a projection": {"propertyMask": {"paths": ["a"]}, "projection": [prop("a")]},
 }
 
 LONG = "s" * 1501
@@ -410,6 +413,7 @@ REPRESENTATIVE = [
     "two NOT_EQUAL", "NOT_IN with IN", "two kinds", "IN an empty array", "an ancestor that is not a key",
     "a cursor that does not parse", "36 disjunctions", "a property ordered twice", "an order without a kind",
     "a key filter on a string", "a projection of an equality", "a kind query with a property filter", "110 filters",
+    "an empty mask path", "a mask on a projection",
 ]
 AGGREGATION_REPRESENTATIVE = [
     "an aggregation without an operator", "a negative up_to", "two kinds", "an empty filter", "a filter without a value",
@@ -750,7 +754,7 @@ def paired(operands, catalogue, representative, build):
 
 
 # Parts of the request a problem may set, outside the query.
-REQUEST = ("partitionId", "readOptions")
+REQUEST = ("partitionId", "readOptions", "propertyMask")
 
 
 def query_body(problems):
