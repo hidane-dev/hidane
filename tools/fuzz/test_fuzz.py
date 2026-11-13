@@ -195,6 +195,11 @@ class Classification(unittest.TestCase):
         other = answer(200, '{"documents": [%s, %s]}' % (named, named.replace("/x", "/y")))
         self.assertEqual(diff.classify(STEP, other, answer(200, '{"documents": [%s, %s]}' % (
             named.replace("/x", "/y"), named)))["kind"], "order")
+        # A page of one holds the generated document on one side, another on the other.
+        with_fields = auto[:-1] + ', "fields": {"a": {"nullValue": null}}}'
+        page = lambda doc: answer(200, '{"documents": [%s], "nextPageToken": "<token>"}' % doc)  # noqa: E731
+        self.assertIsNone(diff.classify(STEP, page(named), page(with_fields)))
+        self.assertEqual(diff.classify(STEP, page(named), page(named.replace("/x", "/y")))["kind"], "data")
 
     def test_message(self):
         found = diff.classify(STEP, error(400, "Bad 'a' at 3"), error(400, "Wrong"))
