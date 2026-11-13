@@ -954,7 +954,7 @@ fn cursor_errors(plan: &Plan) -> Result<(), Status> {
 /// it, is matched by its values alone. A position whose values end before a property is an
 /// internal error at a row that matches them, when just before its row and the properties run
 /// one way, or just past it and they do not ([`cursor_errors`] tells of one that errs whatever
-/// the rows); otherwise its key, if any, compares with that property's value.
+/// the rows); otherwise its key, if any, sorts after every value of that property.
 fn compare_position(row: &Row<'_>, position: &Position, plan: &Plan) -> Result<Ordering, Status> {
     let mut i = 0;
     for (at, (field, descending)) in plan.orders.iter().enumerate() {
@@ -969,14 +969,15 @@ fn compare_position(row: &Row<'_>, position: &Position, plan: &Plan) -> Result<O
         if at_key && field.is_some() && position.before == one_way(plan) {
             return Err(Status::unknown(""));
         }
-        let theirs = match (position.values.get(at), &position.key) {
-            (Some(value), _) => value.clone(),
-            (None, Some(key)) if at_key && (field.is_some() || at + 1 == plan.orders.len()) => {
-                key_value(plan, key)
+        let ordering = match (position.values.get(at), &position.key) {
+            (Some(value), _) => own.cmp(value),
+            // A key where a property's value goes sorts after every value, keys too.
+            (None, Some(_)) if at_key && field.is_some() => Ordering::Less,
+            (None, Some(key)) if at_key && at + 1 == plan.orders.len() => {
+                own.cmp(&key_value(plan, key))
             }
             _ => break,
         };
-        let ordering = own.cmp(&theirs);
         let ordering = if *descending {
             ordering.reverse()
         } else {

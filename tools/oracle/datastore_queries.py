@@ -117,6 +117,10 @@ DATASET += [
     (key(("E", "e1"), ns="xg"), {"b": ARR(I(1), I(2)), "c": I(1), "d": ARR(I(5), I(6))}),
     (key(("E", "e2"), ns="xg"), {"b": ARR(I(2), I(3)), "c": I(2), "d": I(7)}),
 ]
+# Keys as property values, for a cursor's key where a property's value goes, in a namespace of
+# their own.
+DATASET += [(key(("L", "k1"), ns="xk"), {"k": KEY(("L", "z9"))}), (key(("L", "k2"), ns="xk"), {"k": KEY(("A", 5))}),
+            (key(("L", "k3"), ns="xk"), {"k": I(7)})]
 # Entity values with keys, for property masks, in a namespace of their own.
 KEYED = {"entityValue": {"key": key(("In", "i1")), "properties": {
     "x": I(1), "y": I(2), "sub": {"entityValue": {"key": key(("Sub", 3)), "properties": {"z": I(3)}}}}}}
@@ -368,6 +372,12 @@ for name, q, ns in [
     ("key descending as the end cursor, b", {"kind": L, "order": [asc("b")], "endCursor": "<x key descending>"}, "xc"),
 ]:
     xc(f"a cursor of another query: {name}", q, ns=ns)
+
+# A key where a property's value goes sorts after every value, keys too.
+xc("cursor source K: key", {"kind": L, "limit": 1}, defines={"xk key": "batch.endCursor"}, ns="xk")
+for target, order in [("k", [asc("k")]), ("k descending", [desc("k")])]:
+    for which in ("startCursor", "endCursor"):
+        xc(f"{which} of K 'key' in '{target}'", {"kind": L, "order": order, which: "<xk key>"}, ns="xk")
 
 # A distinct query's cursor has no key: no namespace or kind of its own. A cursor's key that
 # meets a value is compared with it, or is an internal error at a row it reaches (just before its
