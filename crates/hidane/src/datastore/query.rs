@@ -908,9 +908,19 @@ fn ends_before_value(plan: &Plan, position: &Position) -> bool {
 }
 
 /// A cursor just before its row, with a null value, whose values meet properties and end before
-/// another, all ordered one way, is an internal error on the official emulator, whatever the rows.
+/// another, all ordered one way, is an internal error on the official emulator, whatever the rows;
+/// so is a cursor of a key alone (a query's ordered by its key) where `plan` orders by a property
+/// first, when just before its row (its query's key descending) or the properties do not run one
+/// way (`tools/oracle/datastore_queries.py`).
 fn cursor_errors(plan: &Plan) -> Result<(), Status> {
     for position in [&plan.start, &plan.end].into_iter().flatten() {
+        if position.values.is_empty()
+            && position.key.is_some()
+            && ends_before_value(plan, position)
+            && (position.before || !one_way(plan))
+        {
+            return Err(Status::unknown(""));
+        }
         let values_meet_properties = plan
             .orders
             .iter()
