@@ -195,6 +195,11 @@ class Classification(unittest.TestCase):
         other = answer(200, '{"documents": [%s, %s]}' % (named, named.replace("/x", "/y")))
         self.assertEqual(diff.classify(STEP, other, answer(200, '{"documents": [%s, %s]}' % (
             named.replace("/x", "/y"), named)))["kind"], "order")
+        # A page of one holds the generated document on one side, another on the other.
+        with_fields = auto[:-1] + ', "fields": {"a": {"nullValue": null}}}'
+        page = lambda doc: answer(200, '{"documents": [%s], "nextPageToken": "<token>"}' % doc)  # noqa: E731
+        self.assertIsNone(diff.classify(STEP, page(named), page(with_fields)))
+        self.assertEqual(diff.classify(STEP, page(named), page(named.replace("/x", "/y")))["kind"], "data")
 
     def test_message(self):
         found = diff.classify(STEP, error(400, "Bad 'a' at 3"), error(400, "Wrong"))
@@ -394,6 +399,18 @@ class RequestRules(unittest.TestCase):
         self.assertFalse(diff.entity_operand(aggregation(on("LESS_THAN", {"integerValue": "1"}))))
         self.assertFalse(diff.entity_operand({"method": "POST", "path": "/v1/projects/{project}:runQuery",
                                               "body": {"query": {"filter": on("LESS_THAN", {"entityValue": {}})}}}))
+        gql = lambda text, **bindings: {"method": "POST", "path": "/v1/projects/{project}:runAggregationQuery",  # noqa: E731
+                                        "body": {"gqlQuery": {"queryString": text, **bindings}}}
+        entity, one = {"value": {"entityValue": {}}}, {"value": {"integerValue": "1"}}
+        over = "AGGREGATE COUNT(*) OVER (SELECT * FROM K WHERE {})".format
+        self.assertTrue(diff.entity_operand(gql(over("b <= @e"), namedBindings={"e": entity})))
+        self.assertTrue(diff.entity_operand(gql(over("b>@1"), positionalBindings=[entity])))
+        self.assertTrue(diff.entity_operand(gql(over("b IN ARRAY(@1, @e)"), namedBindings={"e": entity},
+                                                positionalBindings=[one])))
+        self.assertFalse(diff.entity_operand(gql(over("b != @e"), namedBindings={"e": entity})))
+        self.assertFalse(diff.entity_operand(gql(over("b < @e"), namedBindings={"e": one})))
+        self.assertFalse(diff.entity_operand({**gql("SELECT * FROM K WHERE b < @e", namedBindings={"e": entity}),
+                                              "path": "/v1/projects/{project}:runQuery"}))
 
         order = lambda *names: [{"property": {"name": n}} for n in names]  # noqa: E731
         cursor_query = lambda **q: {"method": "POST", "path": "/v1/projects/{project}:runQuery",  # noqa: E731
