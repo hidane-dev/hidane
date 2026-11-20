@@ -12,8 +12,8 @@
     "test": "node --test --test-reporter=spec"
   },
   "devDependencies": {
-    "firebase-admin": "14.5.0",
-    "firebase-tools": "15.35.0"
+    "firebase-admin": "14.5.1",
+    "firebase-tools": "15.36.0"
   },
   "overrides": {
     "gaxios": {
