@@ -292,7 +292,7 @@ jobs:
       HIDANE: hidane
     steps:
       # Puts the pub cache's bin directory on PATH.
-      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
+      - uses: dart-lang/setup-dart@2286a0c042b44434fe26d292bbce8d34f7ec662b # v1.8.2
       # The launcher downloads the release archive on its first run, in the checks below. pub.dev
       # can list a new version before every runner's resolution sees it (pub-ready passed for
       # 0.2.3 while two runners still activated 0.2.2), so activate again until it is this one.
